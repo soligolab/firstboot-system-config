@@ -1,0 +1,156 @@
+import { Button, ComboBox, GroupBox, LineEdit } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    title: "First Boot - Configurazione Utenti";
+    width: 1080px;
+    height: 760px;
+
+    in-out property <string> admin_username: "sysadmin";
+    in-out property <string> admin_full_name: "System Administrator";
+    in-out property <string> admin_password;
+    in-out property <int> admin_permission_idx: 0;
+    in-out property <string> admin_password_feedback: "";
+
+    in-out property <string> installer_username: "fieldtech";
+    in-out property <string> installer_full_name: "Field Installer";
+    in-out property <string> installer_password;
+    in-out property <int> installer_permission_idx: 1;
+    in-out property <string> installer_password_feedback: "";
+
+    in-out property <string> viewer_username: "operator";
+    in-out property <string> viewer_full_name: "End User Operator";
+    in-out property <string> viewer_password;
+    in-out property <int> viewer_permission_idx: 2;
+    in-out property <string> viewer_password_feedback: "";
+
+    callback password_feedback(string, string) -> string;
+    callback apply_configuration();
+    callback backup_recovery();
+    callback factory_reset();
+
+    VerticalLayout {
+        padding: 20px;
+        spacing: 14px;
+
+        Text {
+            text: "Configurazione primo avvio - utenti e permessi";
+            font-size: 24px;
+            font-weight: 700;
+            horizontal-alignment: center;
+        }
+
+        Text {
+            text: "Nomi suggeriti: sysadmin (amministratore), fieldtech (installatore), operator (utente finale).";
+            color: #404040;
+            horizontal-alignment: center;
+        }
+
+        HorizontalLayout {
+            spacing: 12px;
+
+            GroupBox {
+                title: "Amministratore di sistema";
+                VerticalLayout {
+                    spacing: 8px;
+                    Text { text: "Username"; }
+                    LineEdit { text <=> root.admin_username; }
+                    Text { text: "Nome esteso"; }
+                    LineEdit { text <=> root.admin_full_name; }
+                    Text { text: "Password"; }
+                    LineEdit {
+                        input-type: password;
+                        text <=> root.admin_password;
+                        edited(text) => {
+                            root.admin_password_feedback = root.password_feedback("Amministratore", text);
+                        }
+                    }
+                    Text { text: root.admin_password_feedback; color: #505050; wrap: word-wrap; }
+                    Text { text: "Permessi"; }
+                    ComboBox {
+                        model: ["Amministratore completo", "Rete e ora di sistema", "Sola visualizzazione"];
+                        current-index <=> root.admin_permission_idx;
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Installatore";
+                VerticalLayout {
+                    spacing: 8px;
+                    Text { text: "Username"; }
+                    LineEdit { text <=> root.installer_username; }
+                    Text { text: "Nome esteso"; }
+                    LineEdit { text <=> root.installer_full_name; }
+                    Text { text: "Password"; }
+                    LineEdit {
+                        input-type: password;
+                        text <=> root.installer_password;
+                        edited(text) => {
+                            root.installer_password_feedback = root.password_feedback("Installatore", text);
+                        }
+                    }
+                    Text { text: root.installer_password_feedback; color: #505050; wrap: word-wrap; }
+                    Text { text: "Permessi"; }
+                    ComboBox {
+                        model: ["Amministratore completo", "Rete e ora di sistema", "Sola visualizzazione"];
+                        current-index <=> root.installer_permission_idx;
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Utente finale";
+                VerticalLayout {
+                    spacing: 8px;
+                    Text { text: "Username"; }
+                    LineEdit { text <=> root.viewer_username; }
+                    Text { text: "Nome esteso"; }
+                    LineEdit { text <=> root.viewer_full_name; }
+                    Text { text: "Password"; }
+                    LineEdit {
+                        input-type: password;
+                        text <=> root.viewer_password;
+                        edited(text) => {
+                            root.viewer_password_feedback = root.password_feedback("Utente finale", text);
+                        }
+                    }
+                    Text { text: root.viewer_password_feedback; color: #505050; wrap: word-wrap; }
+                    Text { text: "Permessi"; }
+                    ComboBox {
+                        model: ["Amministratore completo", "Rete e ora di sistema", "Sola visualizzazione"];
+                        current-index <=> root.viewer_permission_idx;
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 1px;
+            background: #d7d7d7;
+        }
+
+        HorizontalLayout {
+            spacing: 12px;
+            alignment: center;
+
+            Button {
+                text: "Applica configurazione";
+                clicked => { root.apply_configuration(); }
+            }
+            Button {
+                text: "Backup recovery";
+                clicked => { root.backup_recovery(); }
+            }
+            Button {
+                text: "Factory Reset";
+                clicked => { root.factory_reset(); }
+            }
+        }
+
+        Text {
+            text: "Nota: il controllo complessità password è informativo (non blocca il salvataggio).";
+            color: #606060;
+            horizontal-alignment: center;
+        }
+    }
+}
