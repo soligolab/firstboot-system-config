@@ -1,6 +1,6 @@
 # First Boot System Config
 
-Applicazione desktop in **Rust + Slint** per guidare la configurazione iniziale di un sistema embedded/industrial con gestione utenti, permessi e impostazioni orarie.
+Applicazione web in **Rust** per guidare la configurazione iniziale di un sistema embedded/industrial con gestione utenti, permessi e impostazioni orarie, esposta su `http://<host>:22346`.
 
 ## Anteprima GUI
 
@@ -10,25 +10,17 @@ Applicazione desktop in **Rust + Slint** per guidare la configurazione iniziale 
 
 - Configura tre profili utente suggeriti (amministratore, installatore, utente finale).
 - Permette di assegnare livelli di permesso differenti per ciascun utente.
-- Mostra un feedback di complessità password (informativo).
-- Include hook placeholder per:
-  - applicazione configurazione utenti,
-  - backup recovery,
-  - factory reset.
+- Mostra un feedback di complessità password con barra colorata (informativo).
+- Esegue azioni lato host (backend Rust) per apply, backup recovery, factory reset e aggiornamento data/ora/timezone.
 - Mostra in alto **data, ora e timezone correnti**.
-- Include il pulsante **"Configura orario"** con pagina/modale dedicata per:
-  - modifica data,
-  - modifica ora,
-  - selezione timezone,
-  - salvataggio (hook verso futura integrazione con OS).
+- Include selezione lingua (inglese predefinito, italiano disponibile).
+- GUI responsive con target minimo 1024x600.
 
 ## Istruzioni di compilazione
 
 Prerequisiti minimi:
 
 - `rustc` / `cargo` (toolchain Rust recente)
-- compilatore C/C++ (`build-essential`)
-- librerie base grafiche per Linux desktop
 
 Build e run:
 
@@ -37,18 +29,19 @@ cargo build --release
 cargo run
 ```
 
-## Setup sintetico ambiente Rust + Slint su Linux (Debian/Ubuntu)
+Aprire poi il browser su:
 
-### 1) Installare dipendenze di sistema
+```text
+http://localhost:22346
+```
+
+## Setup sintetico ambiente Rust su Linux (Debian/Ubuntu)
+
+### 1) Installare dipendenze di base
 
 ```bash
 sudo apt update
-sudo apt install -y \
-  build-essential \
-  curl \
-  pkg-config \
-  libx11-dev libxext-dev libxrender-dev libxfixes-dev \
-  libxcb1-dev libxkbcommon-dev libwayland-dev wayland-protocols
+sudo apt install -y build-essential curl
 ```
 
 ### 2) Installare Rust (rustup)
@@ -65,13 +58,3 @@ rustup update stable
 rustc --version
 cargo --version
 ```
-
-### 4) Clonare e avviare il progetto
-
-```bash
-git clone <url-repository>
-cd firstboot-system-config
-cargo run
-```
-
-> Nota: in ambienti headless o container è necessario un backend grafico (X11/Wayland) per visualizzare la finestra Slint.
