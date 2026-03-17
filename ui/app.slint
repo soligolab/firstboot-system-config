@@ -5,6 +5,12 @@ export component AppWindow inherits Window {
     width: 1080px;
     height: 760px;
 
+    in-out property <string> current_date: "--/--/----";
+    in-out property <string> current_time: "--:--:--";
+    in-out property <int> current_timezone_idx: 1;
+    in-out property <string> current_timezone_label: "Europe/Rome";
+    in-out property <bool> show_time_settings: false;
+
     in-out property <string> admin_username: "sysadmin";
     in-out property <string> admin_full_name: "System Administrator";
     in-out property <string> admin_password;
@@ -27,10 +33,41 @@ export component AppWindow inherits Window {
     callback apply_configuration();
     callback backup_recovery();
     callback factory_reset();
+    callback open_time_settings();
+    callback close_time_settings();
+    callback save_time_settings();
 
     VerticalLayout {
         padding: 20px;
         spacing: 14px;
+
+        HorizontalLayout {
+            spacing: 12px;
+            Rectangle {
+                HorizontalLayout {
+                    spacing: 12px;
+                    Text {
+                        text: "Data: " + root.current_date;
+                        font-weight: 600;
+                    }
+                    Text {
+                        text: "Ora: " + root.current_time;
+                        font-weight: 600;
+                    }
+                    Text {
+                        text: "Timezone: " + root.current_timezone_label;
+                        font-weight: 600;
+                    }
+                }
+            }
+            Rectangle {
+                horizontal-stretch: 1;
+            }
+            Button {
+                text: "Configura orario";
+                clicked => { root.open_time_settings(); }
+            }
+        }
 
         Text {
             text: "Configurazione primo avvio - utenti e permessi";
@@ -151,6 +188,70 @@ export component AppWindow inherits Window {
             text: "Nota: il controllo complessità password è informativo (non blocca il salvataggio).";
             color: #606060;
             horizontal-alignment: center;
+        }
+    }
+
+    Rectangle {
+        visible: root.show_time_settings;
+        background: #00000066;
+        width: parent.width;
+        height: parent.height;
+
+        Rectangle {
+            width: 500px;
+            height: 330px;
+            background: #f7f7f7;
+            border-color: #c8c8c8;
+            border-width: 1px;
+            border-radius: 10px;
+            x: (parent.width - self.width) / 2;
+            y: (parent.height - self.height) / 2;
+
+            VerticalLayout {
+                padding: 16px;
+                spacing: 10px;
+
+                Text {
+                    text: "Configurazione orario di sistema";
+                    font-size: 20px;
+                    font-weight: 700;
+                }
+
+                Text { text: "Data corrente"; }
+                LineEdit {
+                    text <=> root.current_date;
+                }
+
+                Text { text: "Ora corrente"; }
+                LineEdit {
+                    text <=> root.current_time;
+                }
+
+                Text { text: "Timezone"; }
+                ComboBox {
+                    model: ["UTC", "Europe/Rome", "Europe/London", "America/New_York", "Asia/Tokyo"];
+                    current-index <=> root.current_timezone_idx;
+                }
+
+                Text {
+                    text: "Formato suggerito: data GG/MM/AAAA, ora HH:MM:SS";
+                    color: #606060;
+                }
+
+                HorizontalLayout {
+                    spacing: 10px;
+                    alignment: end;
+
+                    Button {
+                        text: "Annulla";
+                        clicked => { root.close_time_settings(); }
+                    }
+                    Button {
+                        text: "Salva";
+                        clicked => { root.save_time_settings(); }
+                    }
+                }
+            }
         }
     }
 }
