@@ -10,6 +10,7 @@ export component AppWindow inherits Window {
     in-out property <int> current_timezone_idx: 1;
     in-out property <string> current_timezone_label: "Europe/Rome";
     in-out property <bool> show_time_settings: false;
+    in-out property <string> status_message: "Pronto.";
 
     in-out property <string> admin_username: "sysadmin";
     in-out property <string> admin_full_name: "System Administrator";
@@ -168,7 +169,6 @@ export component AppWindow inherits Window {
 
         HorizontalLayout {
             spacing: 12px;
-            alignment: center;
 
             Button {
                 text: "Applica configurazione";
@@ -181,6 +181,21 @@ export component AppWindow inherits Window {
             Button {
                 text: "Factory Reset";
                 clicked => { root.factory_reset(); }
+            }
+        }
+
+        Rectangle {
+            border-color: #d7d7d7;
+            border-width: 1px;
+            border-radius: 10px;
+            min-height: 130px;
+
+            Text {
+                x: 12px;
+                y: 12px;
+                width: parent.width - 24px;
+                text: root.status_message;
+                wrap: word-wrap;
             }
         }
 
@@ -234,14 +249,14 @@ export component AppWindow inherits Window {
                 }
 
                 Text {
-                    text: "Formato suggerito: data GG/MM/AAAA, ora HH:MM:SS";
+                    text: "Formato richiesto: data YYYY-MM-DD, ora HH:MM:SS";
                     color: #606060;
                 }
 
                 HorizontalLayout {
                     spacing: 10px;
-                    alignment: end;
 
+                    Rectangle { horizontal-stretch: 1; }
                     Button {
                         text: "Annulla";
                         clicked => { root.close_time_settings(); }
