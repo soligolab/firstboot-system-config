@@ -1,6 +1,6 @@
 # First Boot System Config
 
-Applicazione web in **Rust** per guidare la configurazione iniziale di un sistema embedded/industrial con gestione utenti, permessi e impostazioni orarie, esposta su `http://<host>:22346`.
+Applicazione desktop in **Rust + Slint** per guidare la configurazione iniziale di un sistema embedded/industrial con gestione utenti, permessi e impostazioni orarie.
 
 ## Anteprima GUI
 
@@ -13,8 +13,14 @@ Applicazione web in **Rust** per guidare la configurazione iniziale di un sistem
 - Mostra un feedback di complessità password con barra colorata (informativo).
 - Esegue azioni lato host (backend Rust) per apply, backup recovery, factory reset e aggiornamento data/ora/timezone.
 - Mostra in alto **data, ora e timezone correnti**.
-- Include selezione lingua (inglese predefinito, italiano disponibile).
-- GUI responsive con target minimo 1024x600.
+- Usa come GUI runtime il file `ui/app.slint`, compilato in fase di build tramite `slint-build`.
+- Mostra a video l'esito delle operazioni host direttamente nella finestra Slint.
+
+## Architettura attuale
+
+- `ui/app.slint`: definizione della GUI Slint.
+- `build.rs`: compila `ui/app.slint` durante la build.
+- `src/main.rs`: collega i callback della GUI alle operazioni host (`apply`, `backup`, `factory reset`, `time settings`) e aggiorna orologio/timezone.
 
 ## Istruzioni di compilazione
 
@@ -27,12 +33,6 @@ Build e run:
 ```bash
 cargo build --release
 cargo run
-```
-
-Aprire poi il browser su:
-
-```text
-http://localhost:22346
 ```
 
 ## Setup sintetico ambiente Rust su Linux (Debian/Ubuntu)
