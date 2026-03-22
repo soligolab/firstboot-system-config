@@ -6,12 +6,18 @@ use std::thread;
 use crate::backend::NativeHostService;
 use crate::models::{ApplyConfigurationRequest, SaveTimeSettingsRequest, TimeState};
 
+/// Client HTTP minimale senza dipendenze esterne.
+///
+/// È sufficiente per il dialogo locale GUI <-> backend e mantiene la demo facile da
+/// compilare anche in ambienti embedded o molto controllati.
 #[derive(Clone, Debug)]
 pub struct ApiClient {
     host: String,
 }
 
 impl ApiClient {
+    /// Accetta un URL base come `http://127.0.0.1:7878` e ne estrae la parte host:port
+    /// da usare nelle connessioni TCP raw.
     pub fn new(base_url: String) -> Self {
         let host = base_url
             .trim_start_matches("http://")
@@ -20,31 +26,38 @@ impl ApiClient {
         Self { host }
     }
 
+    /// Recupera lo stato orario corrente dal backend.
     pub fn get_time(&self) -> Result<TimeState, String> {
         let body = self.send_request("GET", "/api/time", "")?;
         TimeState::from_body(&body)
     }
 
+    /// Invia al backend le nuove impostazioni di data/ora/timezone.
     pub fn save_time_settings(&self, request: &SaveTimeSettingsRequest) -> String {
         self.send_request("POST", "/api/time", &request.to_body())
             .unwrap_or_else(|err| format!("ERROR: {err}"))
     }
 
+    /// Invia la configurazione completa dei profili utente.
     pub fn apply_configuration(&self, request: &ApplyConfigurationRequest) -> String {
         self.send_request("POST", "/api/configuration", &request.to_body())
             .unwrap_or_else(|err| format!("ERROR: {err}"))
     }
 
+    /// Richiede al backend l'esecuzione del flusso di backup recovery.
     pub fn backup_recovery(&self) -> String {
         self.send_request("POST", "/api/backup-recovery", "")
             .unwrap_or_else(|err| format!("ERROR: {err}"))
     }
 
+    /// Richiede al backend l'esecuzione del flusso di factory reset.
     pub fn factory_reset(&self) -> String {
         self.send_request("POST", "/api/factory-reset", "")
             .unwrap_or_else(|err| format!("ERROR: {err}"))
     }
 
+    /// Costruisce una richiesta HTTP/1.1 minimale, apre una connessione TCP al server
+    /// locale e restituisce solo il body della risposta se lo status è `200`.
     fn send_request(&self, method: &str, path: &str, body: &str) -> Result<String, String> {
         let mut stream = TcpStream::connect(&self.host).map_err(|err| err.to_string())?;
         let request = format!(
@@ -66,10 +79,12 @@ impl ApiClient {
     }
 }
 
+/// Avvia il server API in background lasciando libero il thread chiamante.
 pub fn spawn_server(addr: String, service: NativeHostService) {
     thread::spawn(move || run_server(addr, service));
 }
 
+/// Avvia il listener TCP e delega ogni connessione in ingresso a un thread dedicato.
 pub fn run_server(addr: String, service: NativeHostService) {
     let listener =
         TcpListener::bind(&addr).unwrap_or_else(|err| panic!("failed to bind {addr}: {err}"));
@@ -90,6 +105,7 @@ pub fn run_server(addr: String, service: NativeHostService) {
     }
 }
 
+/// Legge una richiesta HTTP raw dalla socket, la instrada e scrive la risposta.
 fn handle_connection(mut stream: TcpStream, service: Arc<NativeHostService>) -> Result<(), String> {
     let mut reader = BufReader::new(stream.try_clone().map_err(|err| err.to_string())?);
     let mut request_line = String::new();
@@ -97,6 +113,7 @@ fn handle_connection(mut stream: TcpStream, service: Arc<NativeHostService>) -> 
         .read_line(&mut request_line)
         .map_err(|err| err.to_string())?;
 
+    // Una connessione chiusa senza dati non è considerata errore applicativo.
     if request_line.trim().is_empty() {
         return Ok(());
     }
@@ -105,6 +122,8 @@ fn handle_connection(mut stream: TcpStream, service: Arc<NativeHostService>) -> 
     let method = parts.next().ok_or_else(|| "missing method".to_string())?;
     let path = parts.next().ok_or_else(|| "missing path".to_string())?;
 
+    // Basta conoscere `Content-Length` perché tutti gli endpoint usano body testuali
+    // semplici e connessioni a chiusura esplicita.
     let mut content_length = 0usize;
     loop {
         let mut header = String::new();
@@ -141,12 +160,14 @@ fn handle_connection(mut stream: TcpStream, service: Arc<NativeHostService>) -> 
     stream.flush().map_err(|err| err.to_string())
 }
 
+/// Rappresenta la risposta HTTP completa generata dal router interno.
 struct HttpResponse {
     status: &'static str,
     content_type: &'static str,
     body: String,
 }
 
+/// Router minimale degli endpoint API locali.
 fn route_request(
     method: &str,
     path: &str,
@@ -206,6 +227,8 @@ fn route_request(
     }
 }
 
+/// Pagina informativa mostrata sulla root HTTP per chiarire che la GUI è nativa e
+/// che il server espone solo API locali.
 fn root_page() -> String {
     [
         "<!doctype html>",
@@ -240,6 +263,7 @@ fn root_page() -> String {
     .join("\n")
 }
 
+/// Estrae il body da una risposta HTTP e considera valido solo lo status `200 OK`.
 fn parse_http_response(response: &str) -> Result<String, String> {
     let (head, body) = response
         .split_once("\r\n\r\n")
