@@ -127,11 +127,13 @@ fn handle_connection(mut stream: TcpStream, service: Arc<NativeHostService>) -> 
         .map_err(|err| err.to_string())?;
     let body = String::from_utf8(body_bytes).map_err(|err| err.to_string())?;
 
-    let (status, response_body) = route_request(method, path, &body, &service);
+    let response = route_request(method, path, &body, &service);
     let response = format!(
-        "HTTP/1.1 {status}\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-        response_body.len(),
-        response_body
+        "HTTP/1.1 {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        response.status,
+        response.content_type,
+        response.body.len(),
+        response.body
     );
     stream
         .write_all(response.as_bytes())
@@ -139,26 +141,103 @@ fn handle_connection(mut stream: TcpStream, service: Arc<NativeHostService>) -> 
     stream.flush().map_err(|err| err.to_string())
 }
 
+struct HttpResponse {
+    status: &'static str,
+    content_type: &'static str,
+    body: String,
+}
+
 fn route_request(
     method: &str,
     path: &str,
     body: &str,
     service: &NativeHostService,
-) -> (&'static str, String) {
+) -> HttpResponse {
     match (method, path) {
-        ("GET", "/api/time") => ("200 OK", service.current_time().to_body()),
+        ("GET", "/") => HttpResponse {
+            status: "200 OK",
+            content_type: "text/html; charset=utf-8",
+            body: root_page(),
+        },
+        ("GET", "/api/time") => HttpResponse {
+            status: "200 OK",
+            content_type: "text/plain; charset=utf-8",
+            body: service.current_time().to_body(),
+        },
         ("POST", "/api/time") => match SaveTimeSettingsRequest::from_body(body) {
-            Ok(payload) => ("200 OK", service.save_time_settings(payload)),
-            Err(err) => ("400 Bad Request", format!("invalid request: {err}")),
+            Ok(payload) => HttpResponse {
+                status: "200 OK",
+                content_type: "text/plain; charset=utf-8",
+                body: service.save_time_settings(payload),
+            },
+            Err(err) => HttpResponse {
+                status: "400 Bad Request",
+                content_type: "text/plain; charset=utf-8",
+                body: format!("invalid request: {err}"),
+            },
         },
         ("POST", "/api/configuration") => match ApplyConfigurationRequest::from_body(body) {
-            Ok(payload) => ("200 OK", service.apply_configuration(payload)),
-            Err(err) => ("400 Bad Request", format!("invalid request: {err}")),
+            Ok(payload) => HttpResponse {
+                status: "200 OK",
+                content_type: "text/plain; charset=utf-8",
+                body: service.apply_configuration(payload),
+            },
+            Err(err) => HttpResponse {
+                status: "400 Bad Request",
+                content_type: "text/plain; charset=utf-8",
+                body: format!("invalid request: {err}"),
+            },
         },
-        ("POST", "/api/backup-recovery") => ("200 OK", service.backup_recovery()),
-        ("POST", "/api/factory-reset") => ("200 OK", service.factory_reset()),
-        _ => ("404 Not Found", "not found".to_string()),
+        ("POST", "/api/backup-recovery") => HttpResponse {
+            status: "200 OK",
+            content_type: "text/plain; charset=utf-8",
+            body: service.backup_recovery(),
+        },
+        ("POST", "/api/factory-reset") => HttpResponse {
+            status: "200 OK",
+            content_type: "text/plain; charset=utf-8",
+            body: service.factory_reset(),
+        },
+        _ => HttpResponse {
+            status: "404 Not Found",
+            content_type: "text/plain; charset=utf-8",
+            body: "not found".to_string(),
+        },
     }
+}
+
+fn root_page() -> String {
+    [
+        "<!doctype html>",
+        "<html lang=\"it\">",
+        "<head>",
+        "  <meta charset=\"utf-8\">",
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+        "  <title>First Boot System Config API</title>",
+        "  <style>",
+        "    body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding: 0 1rem; line-height: 1.5; }",
+        "    code { background: #f3f4f6; padding: 0.15rem 0.35rem; border-radius: 0.25rem; }",
+        "    pre { background: #111827; color: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }",
+        "    ul { padding-left: 1.25rem; }",
+        "  </style>",
+        "</head>",
+        "<body>",
+        "  <h1>First Boot System Config</h1>",
+        "  <p>La GUI di questa applicazione è nativa (Slint). La porta HTTP espone il backend API locale usato dalla GUI, quindi aprire questa URL nel browser non mostra l'interfaccia desktop.</p>",
+        "  <p>Endpoint disponibili:</p>",
+        "  <ul>",
+        "    <li><code>GET /api/time</code></li>",
+        "    <li><code>POST /api/time</code></li>",
+        "    <li><code>POST /api/configuration</code></li>",
+        "    <li><code>POST /api/backup-recovery</code></li>",
+        "    <li><code>POST /api/factory-reset</code></li>",
+        "  </ul>",
+        "  <p>Prova rapida:</p>",
+        "  <pre>curl http://127.0.0.1:7878/api/time</pre>",
+        "</body>",
+        "</html>",
+    ]
+    .join("\n")
 }
 
 fn parse_http_response(response: &str) -> Result<String, String> {
