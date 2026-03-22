@@ -5,7 +5,10 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
-slint = "1.13"
+slint = { version = "=1.15.1", default-features = false, features = ["std", "compat-1-2", "backend-winit", "renderer-software"] }
 
 [build-dependencies]
-slint-build = "1.13"
+slint-build = { version = "=1.15.1" }
+
+[patch.crates-io]
+typed-index-collections = { path = "vendor/typed-index-collections-3.5.0" }
