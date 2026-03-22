@@ -58,6 +58,8 @@ Solo backend API:
 cargo run -- server
 ```
 
+Aprendo `http://127.0.0.1:7878/` nel browser non viene mostrata la GUI Slint: la porta espone il backend HTTP locale usato dalla GUI nativa. La root (`/`) ora mostra una pagina informativa, mentre i dati utili sono sugli endpoint `/api/...` (ad esempio `GET /api/time`).
+
 Con indirizzo API personalizzato:
 
 ```bash
