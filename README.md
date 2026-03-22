@@ -18,9 +18,26 @@ Applicazione desktop in **Rust + Slint** per guidare la configurazione iniziale 
 
 ## Architettura attuale
 
-- `ui/app.slint`: definizione della GUI Slint.
+La GUI Slint e il backend host sono ora separati tramite una **API HTTP locale**:
+
+- `ui/app.slint`: definizione della GUI Slint condivisa.
+- `src/main.rs`: avvia la GUI Slint e la collega a un `ApiClient` HTTP, invece che ai comandi host diretti.
+- `src/api.rs`: espone il backend API locale e il client HTTP usato dalla GUI.
+- `src/backend.rs`: implementa il servizio host nativo che esegue le operazioni di sistema.
+- `src/models.rs`: modelli condivisi tra frontend e backend API.
 - `build.rs`: compila `ui/app.slint` durante la build.
-- `src/main.rs`: collega i callback della GUI alle operazioni host (`apply`, `backup`, `factory reset`, `time settings`) e aggiorna orologio/timezone.
+
+In modalità GUI, l'app avvia automaticamente un backend locale su `127.0.0.1:7878` (configurabile con `FIRSTBOOT_API_ADDR`) e la GUI Slint comunica solo via HTTP verso gli endpoint locali.
+
+### Endpoint disponibili
+
+- `GET /api/time`
+- `POST /api/time`
+- `POST /api/configuration`
+- `POST /api/backup-recovery`
+- `POST /api/factory-reset`
+
+Questa separazione prepara il progetto a riusare la stessa UI Slint con un backend API stabile anche per futuri frontend via browser/URL.
 
 ## Istruzioni di compilazione
 
@@ -33,6 +50,18 @@ Build e run:
 ```bash
 cargo build --release
 cargo run
+```
+
+Solo backend API:
+
+```bash
+cargo run -- server
+```
+
+Con indirizzo API personalizzato:
+
+```bash
+FIRSTBOOT_API_ADDR=0.0.0.0:7878 cargo run -- server
 ```
 
 ## Setup sintetico ambiente Rust su Linux (Debian/Ubuntu)
