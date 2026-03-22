@@ -1,10 +1,13 @@
 import { Button, ComboBox, GroupBox, LineEdit } from "std-widgets.slint";
 
+// Finestra principale della procedura di first-boot. Tutte le proprietà sono
+// sincronizzate da/verso il codice Rust tramite i getter/setter generati da Slint.
 export component AppWindow inherits Window {
     title: "First Boot - Configurazione Utenti";
     width: 1080px;
     height: 760px;
 
+    // Stato corrente dell'orologio di sistema letto dal backend.
     in-out property <string> current_date: "--/--/----";
     in-out property <string> current_time: "--:--:--";
     in-out property <int> current_timezone_idx: 1;
@@ -12,24 +15,28 @@ export component AppWindow inherits Window {
     in-out property <bool> show_time_settings: false;
     in-out property <string> status_message: "Pronto.";
 
+    // Profilo amministratore suggerito al primo avvio.
     in-out property <string> admin_username: "sysadmin";
     in-out property <string> admin_full_name: "System Administrator";
     in-out property <string> admin_password;
     in-out property <int> admin_permission_idx: 0;
     in-out property <string> admin_password_feedback: "";
 
+    // Profilo installatore / tecnico di campo.
     in-out property <string> installer_username: "fieldtech";
     in-out property <string> installer_full_name: "Field Installer";
     in-out property <string> installer_password;
     in-out property <int> installer_permission_idx: 1;
     in-out property <string> installer_password_feedback: "";
 
+    // Profilo operatore finale con privilegi minimi.
     in-out property <string> viewer_username: "operator";
     in-out property <string> viewer_full_name: "End User Operator";
     in-out property <string> viewer_password;
     in-out property <int> viewer_permission_idx: 2;
     in-out property <string> viewer_password_feedback: "";
 
+    // Callback implementati in Rust e invocati dai controlli grafici.
     callback password_feedback(string, string) -> string;
     callback apply_configuration();
     callback backup_recovery();
@@ -42,6 +49,7 @@ export component AppWindow inherits Window {
         padding: 20px;
         spacing: 14px;
 
+        // Barra superiore con stato temporale e accesso al popup di modifica.
         HorizontalLayout {
             spacing: 12px;
             Rectangle {
@@ -83,6 +91,7 @@ export component AppWindow inherits Window {
             horizontal-alignment: center;
         }
 
+        // Le tre card riflettono i profili utente tipici del sistema.
         HorizontalLayout {
             spacing: 12px;
 
@@ -167,6 +176,7 @@ export component AppWindow inherits Window {
             background: #d7d7d7;
         }
 
+        // Pulsanti principali che delegano l'azione al backend host.
         HorizontalLayout {
             spacing: 12px;
 
@@ -184,6 +194,7 @@ export component AppWindow inherits Window {
             }
         }
 
+        // Area di log/stato dove vengono mostrati risultati e messaggi d'errore.
         Rectangle {
             border-color: #d7d7d7;
             border-width: 1px;
@@ -206,6 +217,7 @@ export component AppWindow inherits Window {
         }
     }
 
+    // Overlay modale per la modifica di data, ora e timezone.
     Rectangle {
         visible: root.show_time_settings;
         background: #00000066;
