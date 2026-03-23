@@ -212,8 +212,8 @@ component UserProfileCard inherits Rectangle {
 // sincronizzate da/verso il codice Rust tramite i getter/setter generati da Slint.
 export component AppWindow inherits Window {
     title: root.window_title;
-    width: 1200px;
-    height: 900px;
+    width: 1100px;
+    height: 820px;
     background: #050c16;
 
     in-out property <string> window_title: "First Boot - User Configuration";
@@ -328,9 +328,18 @@ export component AppWindow inherits Window {
         width: parent.width;
         height: parent.height;
 
-        VerticalLayout {
-            padding: 22px;
-            spacing: 18px;
+        Flickable {
+            width: parent.width;
+            height: parent.height;
+            interactive: true;
+            viewport-width: self.width;
+            viewport-height: 1800px;
+
+            VerticalLayout {
+                width: parent.width;
+                height: parent.viewport-height;
+                padding: 22px;
+                spacing: 18px;
 
             Rectangle {
                 border-radius: 28px;
@@ -691,6 +700,7 @@ export component AppWindow inherits Window {
             }
         }
     }
+    }
 
     // Overlay modale per la modifica di data, ora e timezone.
     if root.show_time_settings : Rectangle {
@@ -699,8 +709,8 @@ export component AppWindow inherits Window {
         height: parent.height;
 
         Rectangle {
-            width: 520px;
-            height: 350px;
+            width: parent.width < 560px ? parent.width - 32px : 520px;
+            height: parent.height < 390px ? parent.height - 32px : 350px;
             background: #07111f;
             border-color: #69d6ff22;
             border-width: 1px;
