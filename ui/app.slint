@@ -1,11 +1,220 @@
-import { Button, ComboBox, GroupBox, LineEdit } from "std-widgets.slint";
+import { ComboBox, LineEdit } from "std-widgets.slint";
+
+component ActionButton inherits Rectangle {
+    in property <string> text;
+    in property <color> fill: #20d4ff;
+    in property <color> fill-hover: #56e5ff;
+    in property <color> fill-pressed: #0bb7f0;
+    in property <color> border: #20d4ff;
+    in property <color> foreground: #04101d;
+    callback clicked;
+
+    min-height: 46px;
+    border-radius: 23px;
+    border-width: 1px;
+    border-color: touch.has-hover ? root.fill-hover : root.border;
+    background: touch.pressed ? root.fill-pressed : touch.has-hover ? root.fill-hover : root.fill;
+
+    HorizontalLayout {
+        padding-left: 18px;
+        padding-right: 18px;
+        alignment: center;
+        Text {
+            text: root.text;
+            color: root.foreground;
+            font-size: 15px;
+            font-weight: 700;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+}
+
+component PermissionChip inherits Rectangle {
+    in property <string> text;
+    in-out property <bool> checked;
+    callback toggled;
+
+    min-height: 38px;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: root.checked ? #34d8ff66 : #ffffff12;
+    background: root.checked ? #103756 : #0b1726;
+
+    HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 12px;
+        spacing: 10px;
+        alignment: center;
+
+        Rectangle {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            border-width: 1px;
+            border-color: root.checked ? #20d4ff : #5f738d;
+            background: root.checked ? #20d4ff : transparent;
+
+            Text {
+                text: root.checked ? "✓" : "";
+                color: #04101d;
+                font-size: 12px;
+                font-weight: 800;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: root.text;
+            color: root.checked ? #eef7ff : #c0d0e1;
+            font-size: 13px;
+            font-weight: root.checked ? 700 : 500;
+            vertical-alignment: center;
+            wrap: word-wrap;
+        }
+    }
+
+    touch := TouchArea {
+        clicked => {
+            root.checked = !root.checked;
+            root.toggled();
+        }
+    }
+}
+
+component UserProfileCard inherits Rectangle {
+    in property <string> title;
+    in property <string> badge;
+    in property <string> description;
+    in property <string> username-label;
+    in-out property <string> username;
+    in property <string> full-name-label;
+    in-out property <string> full-name;
+    in property <string> password-label;
+    in-out property <string> password;
+    in-out property <string> password-feedback;
+    in property <string> permissions-label;
+    in property <string> permissions-helper;
+    in property <string> permission-monitor-label;
+    in-out property <bool> permission-monitor;
+    in property <string> permission-users-label;
+    in-out property <bool> permission-users;
+    in property <string> permission-network-label;
+    in-out property <bool> permission-network;
+    in property <string> permission-time-label;
+    in-out property <bool> permission-time;
+    in property <string> permission-recovery-label;
+    in-out property <bool> permission-recovery;
+    callback password-edited(string) -> string;
+
+    border-radius: 22px;
+    border-width: 1px;
+    border-color: #69d6ff22;
+    background: #08182b;
+
+    VerticalLayout {
+        padding: 18px;
+        spacing: 10px;
+
+        HorizontalLayout {
+            spacing: 10px;
+            Rectangle {
+                min-width: 74px;
+                height: 28px;
+                border-radius: 14px;
+                background: #103756;
+                HorizontalLayout {
+                    alignment: center;
+                    Text {
+                        text: root.badge;
+                        color: #72ecff;
+                        font-size: 11px;
+                        font-weight: 800;
+                    }
+                }
+            }
+            Rectangle { horizontal-stretch: 1; }
+        }
+
+        Text {
+            text: root.title;
+            color: #eef7ff;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        Text {
+            text: root.description;
+            color: #94a9c6;
+            wrap: word-wrap;
+            min-height: 48px;
+        }
+
+        Rectangle {
+            height: 1px;
+            background: #ffffff10;
+        }
+
+        Text { text: root.username-label; color: #b7cae3; font-size: 12px; font-weight: 700; }
+        LineEdit { text <=> root.username; }
+
+        Text { text: root.full-name-label; color: #b7cae3; font-size: 12px; font-weight: 700; }
+        LineEdit { text <=> root.full-name; }
+
+        Text { text: root.password-label; color: #b7cae3; font-size: 12px; font-weight: 700; }
+        LineEdit {
+            input-type: InputType.password;
+            text <=> root.password;
+            edited(text) => {
+                root.password-feedback = root.password-edited(text);
+            }
+        }
+
+        Rectangle {
+            border-radius: 12px;
+            background: #0c2237;
+            min-height: 44px;
+            Text {
+                x: 12px;
+                y: 10px;
+                width: parent.width - 24px;
+                text: root.password-feedback;
+                color: #9ab8d1;
+                wrap: word-wrap;
+            }
+        }
+
+        Text { text: root.permissions-label; color: #b7cae3; font-size: 12px; font-weight: 700; }
+        Text {
+            text: root.permissions-helper;
+            color: #6f88a5;
+            font-size: 12px;
+            wrap: word-wrap;
+        }
+
+        VerticalLayout {
+            spacing: 8px;
+            PermissionChip { text: root.permission-monitor-label; checked <=> root.permission-monitor; }
+            PermissionChip { text: root.permission-users-label; checked <=> root.permission-users; }
+            PermissionChip { text: root.permission-network-label; checked <=> root.permission-network; }
+            PermissionChip { text: root.permission-time-label; checked <=> root.permission-time; }
+            PermissionChip { text: root.permission-recovery-label; checked <=> root.permission-recovery; }
+        }
+    }
+}
 
 // Finestra principale della procedura di first-boot. Tutte le proprietà sono
 // sincronizzate da/verso il codice Rust tramite i getter/setter generati da Slint.
 export component AppWindow inherits Window {
     title: root.window_title;
-    width: 1120px;
-    height: 780px;
+    width: 1200px;
+    height: 900px;
+    background: #050c16;
 
     in-out property <string> window_title: "First Boot - User Configuration";
     in-out property <int> current_language_idx: 0;
@@ -13,6 +222,9 @@ export component AppWindow inherits Window {
     in-out property <string> language_label: "Language";
     in-out property <image> current_language_flag;
     in-out property <string> current_language_flag_emoji: "🇬🇧";
+    in-out property <string> hero_eyebrow: "First boot · Slint console";
+    in-out property <string> host_status_label: "Host status";
+    in-out property <string> refresh_state_label: "Refresh status";
 
     // Stato corrente dell'orologio di sistema letto dal backend.
     in-out property <string> current_date: "--/--/----";
@@ -29,44 +241,69 @@ export component AppWindow inherits Window {
     in-out property <string> configure_time_label: "Configure time";
     in-out property <string> main_heading: "First boot configuration - users and permissions";
     in-out property <string> suggestion_text;
+    in-out property <string> user_profiles_heading: "Suggested users and permissions for first boot";
+    in-out property <string> user_profiles_copy;
+    in-out property <string> permissions_helper: "Select the capabilities each profile can access.";
+    in-out property <string> log_badge: "Local HTTP";
 
     // Profilo amministratore suggerito al primo avvio.
     in-out property <string> admin_title: "System administrator";
+    in-out property <string> admin_badge: "ADMIN";
     in-out property <string> admin_description;
     in-out property <string> admin_username: "sysadmin";
     in-out property <string> admin_full_name: "System Administrator";
     in-out property <string> admin_password;
-    in-out property <int> admin_permission_idx: 0;
+    in-out property <bool> admin_permission_monitor: true;
+    in-out property <bool> admin_permission_users: true;
+    in-out property <bool> admin_permission_network: true;
+    in-out property <bool> admin_permission_time: true;
+    in-out property <bool> admin_permission_recovery: true;
     in-out property <string> admin_password_feedback: "";
 
     // Profilo installatore / tecnico di campo.
     in-out property <string> installer_title: "Installer";
+    in-out property <string> installer_badge: "FIELD";
     in-out property <string> installer_description;
     in-out property <string> installer_username: "fieldtech";
     in-out property <string> installer_full_name: "Field Installer";
     in-out property <string> installer_password;
-    in-out property <int> installer_permission_idx: 1;
+    in-out property <bool> installer_permission_monitor: true;
+    in-out property <bool> installer_permission_users: false;
+    in-out property <bool> installer_permission_network: true;
+    in-out property <bool> installer_permission_time: true;
+    in-out property <bool> installer_permission_recovery: true;
     in-out property <string> installer_password_feedback: "";
 
     // Profilo operatore finale con privilegi minimi.
     in-out property <string> viewer_title: "End user";
+    in-out property <string> viewer_badge: "VIEW";
     in-out property <string> viewer_description;
     in-out property <string> viewer_username: "operator";
     in-out property <string> viewer_full_name: "End User Operator";
     in-out property <string> viewer_password;
-    in-out property <int> viewer_permission_idx: 2;
+    in-out property <bool> viewer_permission_monitor: true;
+    in-out property <bool> viewer_permission_users: false;
+    in-out property <bool> viewer_permission_network: false;
+    in-out property <bool> viewer_permission_time: false;
+    in-out property <bool> viewer_permission_recovery: false;
     in-out property <string> viewer_password_feedback: "";
 
     in-out property <string> username_label: "Username";
     in-out property <string> full_name_label: "Full name";
     in-out property <string> password_label: "Password";
     in-out property <string> permissions_label: "Permissions";
-    in-out property <[string]> permission_options: ["Full administrator", "Networking and system time", "Read only"];
+    in-out property <string> permission_monitor_label: "Dashboard and monitoring";
+    in-out property <string> permission_users_label: "User management";
+    in-out property <string> permission_network_label: "Networking";
+    in-out property <string> permission_time_label: "System clock";
+    in-out property <string> permission_recovery_label: "Diagnostics and recovery";
 
     in-out property <string> apply_configuration_label: "Apply configuration";
     in-out property <string> backup_recovery_label: "Backup recovery";
     in-out property <string> factory_reset_label: "Factory reset";
     in-out property <string> note_password;
+    in-out property <string> operations_heading: "Operation status";
+    in-out property <string> action_helper: "Actions are forwarded to the same endpoints used by the web console.";
 
     in-out property <string> time_settings_heading: "Configure date, time and timezone";
     in-out property <string> current_date_input_label: "Current date";
@@ -84,247 +321,411 @@ export component AppWindow inherits Window {
     callback open_time_settings();
     callback close_time_settings();
     callback save_time_settings();
+    callback refresh_state();
 
-    VerticalLayout {
-        padding: 20px;
-        spacing: 14px;
+    Rectangle {
+        background: #050c16;
+        width: parent.width;
+        height: parent.height;
 
-        // Barra superiore con selettore lingua, stato temporale e accesso al popup.
-        HorizontalLayout {
-            spacing: 12px;
+        VerticalLayout {
+            padding: 22px;
+            spacing: 18px;
 
             Rectangle {
+                border-radius: 28px;
+                border-width: 1px;
+                border-color: #69d6ff22;
+                background: #07111f;
+                min-height: 250px;
+
                 HorizontalLayout {
-                    spacing: 8px;
-                    Image {
-                        width: 30px;
-                        height: 22px;
-                        source: root.current_language_flag;
+                    padding: 28px;
+                    spacing: 24px;
+
+                    VerticalLayout {
+                        spacing: 16px;
+                        min-width: 0px;
+                        horizontal-stretch: 1;
+
+                        Rectangle {
+                            min-height: 44px;
+                            border-radius: 22px;
+                            background: #ffffff0f;
+                            border-width: 1px;
+                            border-color: #ffffff12;
+                            HorizontalLayout {
+                                padding-left: 14px;
+                                padding-right: 14px;
+                                spacing: 10px;
+                                alignment: center;
+                                Image { width: 28px; height: 20px; source: root.current_language_flag; }
+                                Text {
+                                    text: root.current_language_flag_emoji;
+                                    visible: root.current_language_flag_emoji != "";
+                                    font-size: 18px;
+                                }
+                                Text { text: root.language_label; color: #b7cae3; font-weight: 700; }
+                                ComboBox {
+                                    horizontal-stretch: 1;
+                                    model: root.language_options;
+                                    current-index <=> root.current_language_idx;
+                                    selected(_) => {
+                                        root.language_changed(root.current_language_idx);
+                                    }
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: root.hero_eyebrow;
+                            color: #20d4ff;
+                            font-size: 12px;
+                            font-weight: 800;
+                        }
+
+                        Text {
+                            text: root.main_heading;
+                            color: #eef7ff;
+                            font-size: 38px;
+                            font-weight: 800;
+                            wrap: word-wrap;
+                        }
+
+                        Text {
+                            text: root.suggestion_text;
+                            color: #94a9c6;
+                            wrap: word-wrap;
+                        }
+
+                        HorizontalLayout {
+                            spacing: 12px;
+                            ActionButton {
+                                text: root.refresh_state_label;
+                                clicked => { root.refresh_state(); }
+                            }
+                            ActionButton {
+                                text: root.configure_time_label;
+                                fill: #ffffff0f;
+                                fill-hover: #1c3149;
+                                fill-pressed: #13253a;
+                                border: #ffffff14;
+                                foreground: #eef7ff;
+                                clicked => { root.open_time_settings(); }
+                            }
+                        }
                     }
-                    Text {
-                        text: root.current_language_flag_emoji;
-                        visible: root.current_language_flag_emoji != "";
-                    }
-                    Text {
-                        text: root.language_label;
-                        font-weight: 600;
-                    }
-                    ComboBox {
-                        model: root.language_options;
-                        current-index <=> root.current_language_idx;
-                        selected(_) => {
-                            root.language_changed(root.current_language_idx);
+
+                    Rectangle {
+                        width: 318px;
+                        border-radius: 22px;
+                        border-width: 1px;
+                        border-color: #69d6ff22;
+                        background: #08182b;
+
+                        VerticalLayout {
+                            padding: 22px;
+                            spacing: 16px;
+
+                            Text {
+                                text: root.host_status_label;
+                                color: #94a9c6;
+                                font-size: 13px;
+                                font-weight: 700;
+                            }
+
+                            Rectangle {
+                                border-radius: 16px;
+                                background: #0c2237;
+                                min-height: 84px;
+                                VerticalLayout {
+                                    padding: 16px;
+                                    spacing: 4px;
+                                    Text { text: root.clock_date_label; color: #7d93ae; font-size: 11px; font-weight: 700; }
+                                    Text { text: root.current_date; color: #eef7ff; font-size: 22px; font-weight: 700; }
+                                }
+                            }
+
+                            HorizontalLayout {
+                                spacing: 12px;
+                                Rectangle {
+                                    border-radius: 16px;
+                                    background: #0c2237;
+                                    horizontal-stretch: 1;
+                                    min-height: 96px;
+                                    VerticalLayout {
+                                        padding: 16px;
+                                        spacing: 4px;
+                                        Text { text: root.clock_time_label; color: #7d93ae; font-size: 11px; font-weight: 700; }
+                                        Text { text: root.current_time; color: #eef7ff; font-size: 22px; font-weight: 700; }
+                                    }
+                                }
+                                Rectangle {
+                                    border-radius: 16px;
+                                    background: #0c2237;
+                                    horizontal-stretch: 1;
+                                    min-height: 96px;
+                                    VerticalLayout {
+                                        padding: 16px;
+                                        spacing: 4px;
+                                        Text { text: root.clock_timezone_label; color: #7d93ae; font-size: 11px; font-weight: 700; }
+                                        Text { text: root.current_timezone_label; color: #eef7ff; font-size: 18px; font-weight: 700; wrap: word-wrap; }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
 
             Rectangle {
+                border-radius: 22px;
+                border-width: 1px;
+                border-color: #69d6ff18;
+                background: #08131f;
+                min-height: 84px;
                 HorizontalLayout {
+                    padding-left: 24px;
+                    padding-right: 24px;
+                    padding-top: 20px;
+                    padding-bottom: 20px;
+                    spacing: 24px;
+                    VerticalLayout {
+                        spacing: 6px;
+                        horizontal-stretch: 1;
+                        Text {
+                            text: root.user_profiles_heading;
+                            color: #eef7ff;
+                            font-size: 24px;
+                            font-weight: 700;
+                        }
+                        Text {
+                            text: root.user_profiles_copy;
+                            color: #94a9c6;
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 16px;
+                UserProfileCard {
+                    horizontal-stretch: 1;
+                    title: root.admin_title;
+                    badge: root.admin_badge;
+                    description: root.admin_description;
+                    username-label: root.username_label;
+                    username <=> root.admin_username;
+                    full-name-label: root.full_name_label;
+                    full-name <=> root.admin_full_name;
+                    password-label: root.password_label;
+                    password <=> root.admin_password;
+                    password-feedback <=> root.admin_password_feedback;
+                    permissions-label: root.permissions_label;
+                    permissions-helper: root.permissions_helper;
+                    permission-monitor-label: root.permission_monitor_label;
+                    permission-monitor <=> root.admin_permission_monitor;
+                    permission-users-label: root.permission_users_label;
+                    permission-users <=> root.admin_permission_users;
+                    permission-network-label: root.permission_network_label;
+                    permission-network <=> root.admin_permission_network;
+                    permission-time-label: root.permission_time_label;
+                    permission-time <=> root.admin_permission_time;
+                    permission-recovery-label: root.permission_recovery_label;
+                    permission-recovery <=> root.admin_permission_recovery;
+                    password-edited(text) => { return root.password_feedback(root.admin_title, text); }
+                }
+
+                UserProfileCard {
+                    horizontal-stretch: 1;
+                    title: root.installer_title;
+                    badge: root.installer_badge;
+                    description: root.installer_description;
+                    username-label: root.username_label;
+                    username <=> root.installer_username;
+                    full-name-label: root.full_name_label;
+                    full-name <=> root.installer_full_name;
+                    password-label: root.password_label;
+                    password <=> root.installer_password;
+                    password-feedback <=> root.installer_password_feedback;
+                    permissions-label: root.permissions_label;
+                    permissions-helper: root.permissions_helper;
+                    permission-monitor-label: root.permission_monitor_label;
+                    permission-monitor <=> root.installer_permission_monitor;
+                    permission-users-label: root.permission_users_label;
+                    permission-users <=> root.installer_permission_users;
+                    permission-network-label: root.permission_network_label;
+                    permission-network <=> root.installer_permission_network;
+                    permission-time-label: root.permission_time_label;
+                    permission-time <=> root.installer_permission_time;
+                    permission-recovery-label: root.permission_recovery_label;
+                    permission-recovery <=> root.installer_permission_recovery;
+                    password-edited(text) => { return root.password_feedback(root.installer_title, text); }
+                }
+
+                UserProfileCard {
+                    horizontal-stretch: 1;
+                    title: root.viewer_title;
+                    badge: root.viewer_badge;
+                    description: root.viewer_description;
+                    username-label: root.username_label;
+                    username <=> root.viewer_username;
+                    full-name-label: root.full_name_label;
+                    full-name <=> root.viewer_full_name;
+                    password-label: root.password_label;
+                    password <=> root.viewer_password;
+                    password-feedback <=> root.viewer_password_feedback;
+                    permissions-label: root.permissions_label;
+                    permissions-helper: root.permissions_helper;
+                    permission-monitor-label: root.permission_monitor_label;
+                    permission-monitor <=> root.viewer_permission_monitor;
+                    permission-users-label: root.permission_users_label;
+                    permission-users <=> root.viewer_permission_users;
+                    permission-network-label: root.permission_network_label;
+                    permission-network <=> root.viewer_permission_network;
+                    permission-time-label: root.permission_time_label;
+                    permission-time <=> root.viewer_permission_time;
+                    permission-recovery-label: root.permission_recovery_label;
+                    permission-recovery <=> root.viewer_permission_recovery;
+                    password-edited(text) => { return root.password_feedback(root.viewer_title, text); }
+                }
+            }
+
+            Rectangle {
+                border-radius: 22px;
+                border-width: 1px;
+                border-color: #69d6ff18;
+                background: #08131f;
+                min-height: 88px;
+                VerticalLayout {
+                    padding-left: 22px;
+                    padding-right: 22px;
+                    padding-top: 18px;
+                    padding-bottom: 18px;
                     spacing: 12px;
-                    Text {
-                        text: root.clock_date_label + ": " + root.current_date;
-                        font-weight: 600;
+                    HorizontalLayout {
+                        spacing: 12px;
+                        ActionButton {
+                            text: root.apply_configuration_label;
+                            clicked => { root.apply_configuration(); }
+                        }
+                        ActionButton {
+                            text: root.backup_recovery_label;
+                            fill: #ffffff0f;
+                            fill-hover: #1c3149;
+                            fill-pressed: #13253a;
+                            border: #ffffff14;
+                            foreground: #eef7ff;
+                            clicked => { root.backup_recovery(); }
+                        }
+                        ActionButton {
+                            text: root.factory_reset_label;
+                            fill: #ff4f67;
+                            fill-hover: #ff6e80;
+                            fill-pressed: #ef3954;
+                            border: #ff6b6b;
+                            foreground: white;
+                            clicked => { root.factory_reset(); }
+                        }
                     }
                     Text {
-                        text: root.clock_time_label + ": " + root.current_time;
-                        font-weight: 600;
-                    }
-                    Text {
-                        text: root.clock_timezone_label + ": " + root.current_timezone_label;
-                        font-weight: 600;
+                        text: root.action_helper;
+                        color: #94a9c6;
+                        wrap: word-wrap;
                     }
                 }
             }
+
             Rectangle {
-                horizontal-stretch: 1;
-            }
-            Button {
-                text: root.configure_time_label;
-                clicked => { root.open_time_settings(); }
-            }
-        }
+                border-radius: 22px;
+                border-width: 1px;
+                border-color: #69d6ff22;
+                background: #08182b;
+                vertical-stretch: 1;
+                min-height: 150px;
 
-        Text {
-            text: root.main_heading;
-            font-size: 24px;
-            font-weight: 700;
-            horizontal-alignment: center;
-        }
-
-        Text {
-            text: root.suggestion_text;
-            color: #404040;
-            horizontal-alignment: center;
-        }
-
-        // Le tre card riflettono i profili utente tipici del sistema.
-        HorizontalLayout {
-            spacing: 12px;
-
-            GroupBox {
-                title: root.admin_title;
                 VerticalLayout {
-                    spacing: 8px;
-                    Text { text: root.admin_description; color: #505050; wrap: word-wrap; }
-                    Text { text: root.username_label; }
-                    LineEdit { text <=> root.admin_username; }
-                    Text { text: root.full_name_label; }
-                    LineEdit { text <=> root.admin_full_name; }
-                    Text { text: root.password_label; }
-                    LineEdit {
-                        input-type: password;
-                        text <=> root.admin_password;
-                        edited(text) => {
-                            root.admin_password_feedback = root.password_feedback(root.admin_title, text);
+                    padding-left: 22px;
+                    padding-right: 22px;
+                    padding-top: 18px;
+                    padding-bottom: 18px;
+                    spacing: 12px;
+
+                    HorizontalLayout {
+                        spacing: 12px;
+                        VerticalLayout {
+                            spacing: 4px;
+                            Text { text: root.operations_heading; color: #eef7ff; font-size: 22px; font-weight: 700; }
+                            Text { text: root.note_password; color: #94a9c6; wrap: word-wrap; }
+                        }
+                        Rectangle { horizontal-stretch: 1; }
+                        Rectangle {
+                            min-width: 92px;
+                            height: 30px;
+                            border-radius: 15px;
+                            background: #103756;
+                            HorizontalLayout {
+                                alignment: center;
+                                Text { text: root.log_badge; color: #72ecff; font-size: 12px; font-weight: 800; }
+                            }
                         }
                     }
-                    Text { text: root.admin_password_feedback; color: #505050; wrap: word-wrap; }
-                    Text { text: root.permissions_label; }
-                    ComboBox {
-                        model: root.permission_options;
-                        current-index <=> root.admin_permission_idx;
+
+                    Rectangle {
+                        border-radius: 16px;
+                        background: #06111d;
+                        border-width: 1px;
+                        border-color: #ffffff10;
+                        vertical-stretch: 1;
+                        Text {
+                            x: 16px;
+                            y: 16px;
+                            width: parent.width - 32px;
+                            text: root.status_message;
+                            color: #dbe8f4;
+                            wrap: word-wrap;
+                        }
                     }
                 }
             }
-
-            GroupBox {
-                title: root.installer_title;
-                VerticalLayout {
-                    spacing: 8px;
-                    Text { text: root.installer_description; color: #505050; wrap: word-wrap; }
-                    Text { text: root.username_label; }
-                    LineEdit { text <=> root.installer_username; }
-                    Text { text: root.full_name_label; }
-                    LineEdit { text <=> root.installer_full_name; }
-                    Text { text: root.password_label; }
-                    LineEdit {
-                        input-type: password;
-                        text <=> root.installer_password;
-                        edited(text) => {
-                            root.installer_password_feedback = root.password_feedback(root.installer_title, text);
-                        }
-                    }
-                    Text { text: root.installer_password_feedback; color: #505050; wrap: word-wrap; }
-                    Text { text: root.permissions_label; }
-                    ComboBox {
-                        model: root.permission_options;
-                        current-index <=> root.installer_permission_idx;
-                    }
-                }
-            }
-
-            GroupBox {
-                title: root.viewer_title;
-                VerticalLayout {
-                    spacing: 8px;
-                    Text { text: root.viewer_description; color: #505050; wrap: word-wrap; }
-                    Text { text: root.username_label; }
-                    LineEdit { text <=> root.viewer_username; }
-                    Text { text: root.full_name_label; }
-                    LineEdit { text <=> root.viewer_full_name; }
-                    Text { text: root.password_label; }
-                    LineEdit {
-                        input-type: password;
-                        text <=> root.viewer_password;
-                        edited(text) => {
-                            root.viewer_password_feedback = root.password_feedback(root.viewer_title, text);
-                        }
-                    }
-                    Text { text: root.viewer_password_feedback; color: #505050; wrap: word-wrap; }
-                    Text { text: root.permissions_label; }
-                    ComboBox {
-                        model: root.permission_options;
-                        current-index <=> root.viewer_permission_idx;
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            height: 1px;
-            background: #d7d7d7;
-        }
-
-        // Pulsanti principali che delegano l'azione al backend host.
-        HorizontalLayout {
-            spacing: 12px;
-
-            Button {
-                text: root.apply_configuration_label;
-                clicked => { root.apply_configuration(); }
-            }
-            Button {
-                text: root.backup_recovery_label;
-                clicked => { root.backup_recovery(); }
-            }
-            Button {
-                text: root.factory_reset_label;
-                clicked => { root.factory_reset(); }
-            }
-        }
-
-        // Area di log/stato dove vengono mostrati risultati e messaggi d'errore.
-        Rectangle {
-            border-color: #d7d7d7;
-            border-width: 1px;
-            border-radius: 10px;
-            min-height: 130px;
-
-            Text {
-                x: 12px;
-                y: 12px;
-                width: parent.width - 24px;
-                text: root.status_message;
-                wrap: word-wrap;
-            }
-        }
-
-        Text {
-            text: root.note_password;
-            color: #606060;
-            horizontal-alignment: center;
         }
     }
 
     // Overlay modale per la modifica di data, ora e timezone.
-    Rectangle {
-        visible: root.show_time_settings;
-        background: #00000066;
+    if root.show_time_settings : Rectangle {
+        background: #00000088;
         width: parent.width;
         height: parent.height;
 
         Rectangle {
-            width: 500px;
-            height: 330px;
-            background: #f7f7f7;
-            border-color: #c8c8c8;
+            width: 520px;
+            height: 350px;
+            background: #07111f;
+            border-color: #69d6ff22;
             border-width: 1px;
-            border-radius: 10px;
+            border-radius: 24px;
             x: (parent.width - self.width) / 2;
             y: (parent.height - self.height) / 2;
 
             VerticalLayout {
-                padding: 16px;
-                spacing: 10px;
+                padding: 22px;
+                spacing: 12px;
 
                 Text {
                     text: root.time_settings_heading;
-                    font-size: 20px;
+                    color: #eef7ff;
+                    font-size: 24px;
                     font-weight: 700;
                 }
 
-                Text { text: root.current_date_input_label; }
-                LineEdit {
-                    text <=> root.current_date;
-                }
+                Text { text: root.current_date_input_label; color: #b7cae3; font-size: 12px; font-weight: 700; }
+                LineEdit { text <=> root.current_date; }
 
-                Text { text: root.current_time_input_label; }
-                LineEdit {
-                    text <=> root.current_time;
-                }
+                Text { text: root.current_time_input_label; color: #b7cae3; font-size: 12px; font-weight: 700; }
+                LineEdit { text <=> root.current_time; }
 
-                Text { text: root.clock_timezone_label; }
+                Text { text: root.clock_timezone_label; color: #b7cae3; font-size: 12px; font-weight: 700; }
                 ComboBox {
                     model: root.timezone_options;
                     current-index <=> root.current_timezone_idx;
@@ -332,18 +733,25 @@ export component AppWindow inherits Window {
 
                 Text {
                     text: root.time_format_hint;
-                    color: #606060;
+                    color: #94a9c6;
+                    wrap: word-wrap;
                 }
+
+                Rectangle { vertical-stretch: 1; }
 
                 HorizontalLayout {
                     spacing: 10px;
-
                     Rectangle { horizontal-stretch: 1; }
-                    Button {
+                    ActionButton {
                         text: root.cancel_label;
+                        fill: #ffffff0f;
+                        fill-hover: #1c3149;
+                        fill-pressed: #13253a;
+                        border: #ffffff14;
+                        foreground: #eef7ff;
                         clicked => { root.close_time_settings(); }
                     }
-                    Button {
+                    ActionButton {
                         text: root.save_label;
                         clicked => { root.save_time_settings(); }
                     }
