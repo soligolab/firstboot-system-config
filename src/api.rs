@@ -191,6 +191,11 @@ fn route_request(
             content_type: "application/javascript; charset=utf-8",
             body: web::app_js().to_string(),
         },
+        ("GET", "/languages.xml") => HttpResponse {
+            status: "200 OK",
+            content_type: "application/xml; charset=utf-8",
+            body: web::languages_xml().to_string(),
+        },
         ("GET", "/api/time") => HttpResponse {
             status: "200 OK",
             content_type: "text/plain; charset=utf-8",
