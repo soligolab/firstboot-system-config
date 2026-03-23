@@ -51,7 +51,6 @@ fn main() -> Result<(), slint::PlatformError> {
     let api_client = ApiClient::new(format!("http://{api_addr}"));
     let app = AppWindow::new()?;
     app.set_language_options(localization_catalog.language_names_model());
-    app.set_permission_options(permission_options_model(default_language));
     app.set_timezone_options(timezone_options_model());
     app.set_current_language_idx(default_language_idx as i32);
     apply_language(&app, default_language);
@@ -114,7 +113,6 @@ fn wire_callbacks(
                     (index.max(0) as usize).min(localization_catalog.len().saturating_sub(1));
                 let language = localization_catalog.language(selected_idx);
                 app.set_current_language_idx(selected_idx as i32);
-                app.set_permission_options(permission_options_model(language));
                 apply_language(&app, language);
             }
         });
@@ -153,6 +151,19 @@ fn wire_callbacks(
             if let Some(app) = weak.upgrade() {
                 let result = api_client.factory_reset();
                 app.set_status_message(result.into());
+            }
+        });
+    }
+
+    {
+        let weak = app.as_weak();
+        let api_client = api_client.clone();
+        let localization_catalog = localization_catalog.clone();
+        app.on_refresh_state(move || {
+            if let Some(app) = weak.upgrade() {
+                let language =
+                    localization_catalog.language(app.get_current_language_idx() as usize);
+                refresh_clock(&app, &api_client, language);
             }
         });
     }
@@ -219,6 +230,10 @@ fn apply_language(app: &AppWindow, language: &LanguagePack) {
     app.set_current_language_flag(language.flag_image());
     app.set_current_language_flag_emoji(language.flag_emoji.clone().into());
 
+    app.set_hero_eyebrow(language.text("slint_hero_eyebrow"));
+    app.set_host_status_label(language.text("host_status_label"));
+    app.set_refresh_state_label(language.text("refresh_state"));
+
     app.set_clock_date_label(language.text("clock_date"));
     app.set_clock_time_label(language.text("clock_time"));
     app.set_clock_timezone_label(language.text("clock_timezone"));
@@ -226,10 +241,16 @@ fn apply_language(app: &AppWindow, language: &LanguagePack) {
 
     app.set_main_heading(language.text("main_heading"));
     app.set_suggestion_text(language.text("suggestion_text"));
+    app.set_user_profiles_heading(language.text("user_profiles_heading"));
+    app.set_user_profiles_copy(language.text("user_profiles_copy"));
+    app.set_permissions_helper(language.text("permissions_helper"));
 
     app.set_admin_title(language.text("admin_title"));
     app.set_installer_title(language.text("installer_title"));
     app.set_viewer_title(language.text("viewer_title"));
+    app.set_admin_badge(language.text("admin_badge"));
+    app.set_installer_badge(language.text("installer_badge"));
+    app.set_viewer_badge(language.text("viewer_badge"));
     app.set_admin_description(language.text("admin_description"));
     app.set_installer_description(language.text("installer_description"));
     app.set_viewer_description(language.text("viewer_description"));
@@ -238,11 +259,19 @@ fn apply_language(app: &AppWindow, language: &LanguagePack) {
     app.set_full_name_label(language.text("full_name_label"));
     app.set_password_label(language.text("password_label"));
     app.set_permissions_label(language.text("permissions_label"));
+    app.set_permission_monitor_label(language.text("permission_monitor"));
+    app.set_permission_users_label(language.text("permission_users"));
+    app.set_permission_network_label(language.text("permission_network"));
+    app.set_permission_time_label(language.text("permission_time"));
+    app.set_permission_recovery_label(language.text("permission_recovery"));
 
     app.set_apply_configuration_label(language.text("apply_configuration"));
     app.set_backup_recovery_label(language.text("backup_recovery"));
     app.set_factory_reset_label(language.text("factory_reset"));
     app.set_note_password(language.text("note_password"));
+    app.set_operations_heading(language.text("operations_heading"));
+    app.set_log_badge(language.text("log_badge"));
+    app.set_action_helper(language.text("action_helper"));
 
     app.set_time_settings_heading(language.text("time_modal_title"));
     app.set_current_date_input_label(language.text("current_date_label"));
@@ -275,14 +304,6 @@ fn apply_language(app: &AppWindow, language: &LanguagePack) {
         )
         .into(),
     );
-}
-
-fn permission_options_model(language: &LanguagePack) -> ModelRc<SharedString> {
-    ModelRc::new(VecModel::from(vec![
-        language.text("permission_full"),
-        language.text("permission_network_time"),
-        language.text("permission_readonly"),
-    ]))
 }
 
 fn timezone_options_model() -> ModelRc<SharedString> {
@@ -328,23 +349,61 @@ fn build_user_configs(app: &AppWindow) -> Vec<UserConfig> {
             username: app.get_admin_username().to_string(),
             full_name: app.get_admin_full_name().to_string(),
             password: app.get_admin_password().to_string(),
-            permission_idx: app.get_admin_permission_idx(),
+            permission_idx: permission_mask(
+                app.get_admin_permission_monitor(),
+                app.get_admin_permission_users(),
+                app.get_admin_permission_network(),
+                app.get_admin_permission_time(),
+                app.get_admin_permission_recovery(),
+            ),
         },
         UserConfig {
             role: "installer".into(),
             username: app.get_installer_username().to_string(),
             full_name: app.get_installer_full_name().to_string(),
             password: app.get_installer_password().to_string(),
-            permission_idx: app.get_installer_permission_idx(),
+            permission_idx: permission_mask(
+                app.get_installer_permission_monitor(),
+                app.get_installer_permission_users(),
+                app.get_installer_permission_network(),
+                app.get_installer_permission_time(),
+                app.get_installer_permission_recovery(),
+            ),
         },
         UserConfig {
             role: "viewer".into(),
             username: app.get_viewer_username().to_string(),
             full_name: app.get_viewer_full_name().to_string(),
             password: app.get_viewer_password().to_string(),
-            permission_idx: app.get_viewer_permission_idx(),
+            permission_idx: permission_mask(
+                app.get_viewer_permission_monitor(),
+                app.get_viewer_permission_users(),
+                app.get_viewer_permission_network(),
+                app.get_viewer_permission_time(),
+                app.get_viewer_permission_recovery(),
+            ),
         },
     ]
+}
+
+fn permission_mask(monitor: bool, users: bool, network: bool, time: bool, recovery: bool) -> i32 {
+    let mut mask = 0;
+    if monitor {
+        mask |= 1;
+    }
+    if users {
+        mask |= 1 << 1;
+    }
+    if network {
+        mask |= 1 << 2;
+    }
+    if time {
+        mask |= 1 << 3;
+    }
+    if recovery {
+        mask |= 1 << 4;
+    }
+    mask
 }
 
 /// Restituisce una valutazione qualitativa della password.

@@ -16,6 +16,9 @@
     <text key="admin_title">System administrator</text>
     <text key="installer_title">Installer</text>
     <text key="viewer_title">End user</text>
+    <text key="admin_badge">ADMIN</text>
+    <text key="installer_badge">FIELD</text>
+    <text key="viewer_badge">VIEW</text>
     <text key="admin_description">Full-access profile for setup and supervision.</text>
     <text key="installer_description">Field technician for setup, networking and commissioning.</text>
     <text key="viewer_description">Operator with minimal privileges and read-only access.</text>
@@ -23,6 +26,12 @@
     <text key="full_name_label">Full name</text>
     <text key="password_label">Password</text>
     <text key="permissions_label">Permissions</text>
+    <text key="permissions_helper">Choose the capabilities available to this profile.</text>
+    <text key="permission_monitor">Dashboard and monitoring</text>
+    <text key="permission_users">User management</text>
+    <text key="permission_network">Networking</text>
+    <text key="permission_time">System clock</text>
+    <text key="permission_recovery">Diagnostics and recovery</text>
     <text key="permission_full">Full administrator</text>
     <text key="permission_network_time">Networking and system time</text>
     <text key="permission_readonly">Read only</text>
@@ -34,6 +43,7 @@
     <text key="web_title">Initial system setup from the browser</text>
     <text key="web_text">Responsive web interface inspired by industrial HMIs: dark surfaces, cyan accents, strong typography and technical panels. Every action talks to the same local HTTP backend already used by the Slint GUI.</text>
     <text key="host_status_label">Host status</text>
+    <text key="slint_hero_eyebrow">First boot · Slint console</text>
     <text key="user_profiles_eyebrow">User profiles</text>
     <text key="user_profiles_heading">Suggested users and permissions for first boot</text>
     <text key="user_profiles_copy">Fill in the administrator, installer and end-user profiles. Password feedback is informational and mirrors the Slint GUI.</text>
@@ -71,6 +81,9 @@
     <text key="admin_title">Amministratore di sistema</text>
     <text key="installer_title">Installatore</text>
     <text key="viewer_title">Utente finale</text>
+    <text key="admin_badge">ADMIN</text>
+    <text key="installer_badge">FIELD</text>
+    <text key="viewer_badge">VIEW</text>
     <text key="admin_description">Profilo ad accesso completo per configurazione e supervisione.</text>
     <text key="installer_description">Tecnico di campo per setup, rete e messa in servizio.</text>
     <text key="viewer_description">Operatore con privilegi minimi e accesso di sola consultazione.</text>
@@ -78,6 +91,12 @@
     <text key="full_name_label">Nome esteso</text>
     <text key="password_label">Password</text>
     <text key="permissions_label">Permessi</text>
+    <text key="permissions_helper">Scegli le autorizzazioni disponibili per questo profilo.</text>
+    <text key="permission_monitor">Dashboard e monitoraggio</text>
+    <text key="permission_users">Gestione utenti</text>
+    <text key="permission_network">Rete</text>
+    <text key="permission_time">Ora di sistema</text>
+    <text key="permission_recovery">Diagnostica e recovery</text>
     <text key="permission_full">Amministratore completo</text>
     <text key="permission_network_time">Rete e ora di sistema</text>
     <text key="permission_readonly">Sola visualizzazione</text>
@@ -89,6 +108,7 @@
     <text key="web_title">Configurazione iniziale del sistema da browser</text>
     <text key="web_text">Interfaccia web responsive ispirata all’estetica industriale di Pixsys: superfici scure, accenti turchesi, tipografia forte e pannelli tecnici. Tutte le operazioni dialogano con lo stesso backend HTTP locale già usato dalla GUI Slint.</text>
     <text key="host_status_label">Stato host</text>
+    <text key="slint_hero_eyebrow">First boot · console Slint</text>
     <text key="user_profiles_eyebrow">Profili utente</text>
     <text key="user_profiles_heading">Utenti e permessi suggeriti per il primo avvio</text>
     <text key="user_profiles_copy">Compila i profili amministratore, installatore e operatore finale. Il controllo password è informativo e replica il comportamento della GUI Slint.</text>
@@ -126,6 +146,9 @@
     <text key="admin_title">Systemadministrator</text>
     <text key="installer_title">Installateur</text>
     <text key="viewer_title">Endbenutzer</text>
+    <text key="admin_badge">ADMIN</text>
+    <text key="installer_badge">FIELD</text>
+    <text key="viewer_badge">VIEW</text>
     <text key="admin_description">Profil mit Vollzugriff für Einrichtung und Überwachung.</text>
     <text key="installer_description">Außendiensttechniker für Setup, Netzwerk und Inbetriebnahme.</text>
     <text key="viewer_description">Benutzer mit minimalen Rechten und schreibgeschütztem Zugriff.</text>
@@ -133,6 +156,12 @@
     <text key="full_name_label">Vollständiger Name</text>
     <text key="password_label">Passwort</text>
     <text key="permissions_label">Berechtigungen</text>
+    <text key="permissions_helper">Wählen Sie die Berechtigungen für dieses Profil.</text>
+    <text key="permission_monitor">Dashboard und Monitoring</text>
+    <text key="permission_users">Benutzerverwaltung</text>
+    <text key="permission_network">Netzwerk</text>
+    <text key="permission_time">Systemzeit</text>
+    <text key="permission_recovery">Diagnose und Wiederherstellung</text>
     <text key="permission_full">Volladministrator</text>
     <text key="permission_network_time">Netzwerk und Systemzeit</text>
     <text key="permission_readonly">Nur lesen</text>
@@ -144,6 +173,7 @@
     <text key="web_title">Erstkonfiguration des Systems im Browser</text>
     <text key="web_text">Responsive Weboberfläche im Stil industrieller HMIs: dunkle Flächen, cyanfarbene Akzente, starke Typografie und technische Panels. Alle Aktionen sprechen mit demselben lokalen HTTP-Backend, das auch von der Slint-GUI verwendet wird.</text>
     <text key="host_status_label">Host-Status</text>
+    <text key="slint_hero_eyebrow">First boot · Slint-Konsole</text>
     <text key="user_profiles_eyebrow">Benutzerprofile</text>
     <text key="user_profiles_heading">Empfohlene Benutzer und Berechtigungen für den Erststart</text>
     <text key="user_profiles_copy">Füllen Sie die Profile für Administrator, Installateur und Endbenutzer aus. Das Passwort-Feedback ist rein informativ und entspricht der Slint-GUI.</text>
@@ -181,6 +211,9 @@
     <text key="admin_title">Administrador del sistema</text>
     <text key="installer_title">Instalador</text>
     <text key="viewer_title">Usuario final</text>
+    <text key="admin_badge">ADMIN</text>
+    <text key="installer_badge">FIELD</text>
+    <text key="viewer_badge">VIEW</text>
     <text key="admin_description">Perfil de acceso completo para configuración y supervisión.</text>
     <text key="installer_description">Técnico de campo para puesta en marcha, red y comisionado.</text>
     <text key="viewer_description">Operador con privilegios mínimos y acceso solo de lectura.</text>
@@ -188,6 +221,12 @@
     <text key="full_name_label">Nombre completo</text>
     <text key="password_label">Contraseña</text>
     <text key="permissions_label">Permisos</text>
+    <text key="permissions_helper">Elija las autorizaciones disponibles para este perfil.</text>
+    <text key="permission_monitor">Panel y monitorización</text>
+    <text key="permission_users">Gestión de usuarios</text>
+    <text key="permission_network">Red</text>
+    <text key="permission_time">Hora del sistema</text>
+    <text key="permission_recovery">Diagnóstico y recuperación</text>
     <text key="permission_full">Administrador completo</text>
     <text key="permission_network_time">Red y hora del sistema</text>
     <text key="permission_readonly">Solo lectura</text>
@@ -199,6 +238,7 @@
     <text key="web_title">Configuración inicial del sistema desde el navegador</text>
     <text key="web_text">Interfaz web adaptable inspirada en HMIs industriales: superficies oscuras, acentos cian, tipografía fuerte y paneles técnicos. Cada acción se comunica con el mismo backend HTTP local que ya usa la GUI Slint.</text>
     <text key="host_status_label">Estado del host</text>
+    <text key="slint_hero_eyebrow">First boot · consola Slint</text>
     <text key="user_profiles_eyebrow">Perfiles de usuario</text>
     <text key="user_profiles_heading">Usuarios y permisos sugeridos para el primer arranque</text>
     <text key="user_profiles_copy">Complete los perfiles de administrador, instalador y usuario final. El feedback de la contraseña es informativo y replica el comportamiento de la GUI Slint.</text>
