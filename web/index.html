@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>First Boot System Config</title>
+  <meta name="description" content="Interfaccia web responsive per la configurazione iniziale del sistema, collegata allo stesso backend della GUI Slint.">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">First boot · web console</p>
+        <h1>Configurazione iniziale del sistema da browser</h1>
+        <p class="hero-text">
+          Interfaccia web responsive ispirata all’estetica industriale di Pixsys: superfici scure,
+          accenti turchesi, tipografia forte e pannelli tecnici. Tutte le operazioni dialogano con lo
+          stesso backend HTTP locale già usato dalla GUI Slint.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="refreshClockBtn" type="button">Aggiorna stato</button>
+          <button class="btn btn-secondary" id="openTimeModalBtn" type="button">Configura orario</button>
+        </div>
+      </div>
+      <aside class="status-panel">
+        <p class="panel-label">Stato host</p>
+        <div class="status-grid">
+          <div>
+            <span class="metric-label">Data</span>
+            <strong id="currentDate">--/--/----</strong>
+          </div>
+          <div>
+            <span class="metric-label">Ora</span>
+            <strong id="currentTime">--:--:--</strong>
+          </div>
+          <div class="status-grid-wide">
+            <span class="metric-label">Timezone</span>
+            <strong id="currentTimezone">UTC</strong>
+          </div>
+        </div>
+      </aside>
+    </header>
+
+    <main class="content-stack">
+      <section class="section-header">
+        <div>
+          <p class="eyebrow">Profili utente</p>
+          <h2>Utenti e permessi suggeriti per il primo avvio</h2>
+        </div>
+        <p class="section-copy">
+          Compila i profili amministratore, installatore e operatore finale. Il controllo password è
+          informativo e replica il comportamento della GUI Slint.
+        </p>
+      </section>
+
+      <section class="user-grid" id="userGrid"></section>
+
+      <section class="actions-panel">
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="applyConfigurationBtn" type="button">Applica configurazione</button>
+          <button class="btn btn-secondary" id="backupRecoveryBtn" type="button">Backup recovery</button>
+          <button class="btn btn-danger" id="factoryResetBtn" type="button">Factory reset</button>
+        </div>
+        <p class="helper-text">Le azioni vengono inoltrate agli stessi endpoint usati dal client desktop Slint.</p>
+      </section>
+
+      <section class="log-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Output backend</p>
+            <h2>Stato operazioni</h2>
+          </div>
+          <span class="log-badge">HTTP locale</span>
+        </div>
+        <pre id="statusMessage">Pronto. Frontend web collegato al backend locale.</pre>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="timeModalBackdrop" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="timeModalTitle">
+      <div class="panel-heading modal-heading">
+        <div>
+          <p class="eyebrow">Ora di sistema</p>
+          <h2 id="timeModalTitle">Configura data, ora e timezone</h2>
+        </div>
+      </div>
+
+      <div class="modal-form">
+        <label>
+          <span>Data</span>
+          <input id="timeDateInput" type="date">
+        </label>
+        <label>
+          <span>Ora</span>
+          <input id="timeTimeInput" type="time" step="1">
+        </label>
+        <label>
+          <span>Timezone</span>
+          <select id="timeTimezoneInput"></select>
+        </label>
+      </div>
+
+      <p class="helper-text">Formato richiesto dal backend: data YYYY-MM-DD, ora HH:MM:SS.</p>
+
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancelTimeModalBtn" type="button">Annulla</button>
+        <button class="btn btn-primary" id="saveTimeSettingsBtn" type="button">Salva</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
