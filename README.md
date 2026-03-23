@@ -1,132 +1,215 @@
 # First Boot System Config
 
-Applicazione desktop in **Rust + Slint** per guidare la configurazione iniziale di un sistema embedded/industrial con gestione utenti, permessi e impostazioni orarie.
+Applicazione di **first boot** per sistemi embedded/industriali con due front-end complementari:
+
+- **GUI nativa desktop** realizzata in **Rust + Slint**;
+- **WebPage responsive** servita direttamente dal backend Rust sulla stessa API locale.
+
+L'obiettivo del progetto è accompagnare l'operatore nelle attività iniziali di provisioning del dispositivo: configurazione utenti, permessi, data/ora/timezone e avvio di azioni host come apply configuration, backup recovery e factory reset.
 
 ## Anteprima GUI
 
 ![Anteprima GUI](docs/gui-preview.svg)
 
-## Obiettivo del tool
+---
 
-Il progetto fornisce una GUI desktop nativa per eseguire le attività tipiche di **first boot**:
+## Getting Started
 
-- preparazione di utenti e permessi iniziali;
-- verifica/modifica di data, ora e timezone;
-- attivazione di operazioni host come apply configuration, backup recovery e factory reset;
-- visualizzazione immediata dell'esito delle operazioni direttamente nell'interfaccia.
+### 1. Cosa avvia davvero il progetto
 
-> La GUI non chiama direttamente i comandi di sistema: dialoga sempre con un backend HTTP locale incluso nel progetto.
->
-> La stessa API locale ora alimenta anche una nuova interfaccia web responsive servita dal backend Rust su `GET /`.
+Il binario espone sempre un **backend HTTP locale**. A seconda di come lo lanci puoi usare:
 
-## Architettura in breve
+- la **GUI nativa**, pensata per l'uso su dispositivo o postazione locale;
+- la **WebPage**, utile quando vuoi operare da browser usando gli stessi endpoint.
 
-Il repository è organizzato in due blocchi principali:
+In pratica l'architettura è questa:
 
-- **Frontend nativo Slint**: definito in `ui/app.slint` e compilato in build-time con `slint-build`.
-- **Backend HTTP locale**: implementato in Rust e avviato sulla porta `127.0.0.1:7878` per default.
+1. il backend Rust espone API locali su `127.0.0.1:7878` di default;
+2. la GUI Slint usa quelle API per leggere stato e inviare azioni;
+3. anche la WebPage usa le stesse API e viene servita dallo stesso processo Rust.
 
-### Componenti principali
+> La GUI non esegue direttamente i comandi di sistema: tutte le operazioni passano dal backend HTTP locale.
 
-- `src/main.rs`: bootstrap dell'applicazione, avvio GUI e collegamento dei callback Slint al client API.
-- `src/api.rs`: server HTTP minimale locale + client HTTP raw usato dalla GUI.
-- `src/web.rs` + `web/`: asset e markup della nuova interfaccia browser servita dallo stesso backend.
-- `src/backend.rs`: implementazione demo del servizio host che esegue i comandi locali.
-- `src/models.rs`: payload e modelli condivisi tra frontend e backend.
-- `ui/app.slint`: layout, proprietà e callback della GUI.
-- `build.rs`: compilazione della UI Slint durante la build.
+### 2. Avvio rapido
 
-## Come usare il tool
-
-### Modalità 1: GUI completa
-
-Questa è la modalità normale per l'operatore:
+#### Avviare GUI nativa + backend
 
 ```bash
 cargo run
 ```
 
-Cosa succede:
+Questa è la modalità consigliata per il primo utilizzo. Il processo:
 
-1. il binario avvia un backend HTTP locale in background;
-2. la finestra Slint viene aperta;
-3. la GUI legge data/ora/timezone dal backend;
-4. tutte le azioni dei pulsanti vengono inoltrate via HTTP locale.
-5. in parallelo, aprendo la root HTTP nel browser è disponibile anche la web UI responsive che usa gli stessi endpoint.
+1. avvia il backend locale in background;
+2. apre la finestra desktop Slint;
+3. sincronizza data, ora e timezone dalla macchina host;
+4. rende disponibile in parallelo anche la WebPage sulla root HTTP locale.
 
-### Modalità 2: solo backend API
-
-Utile per test manuali, debugging o integrazione con altri client:
+#### Avviare solo backend + WebPage
 
 ```bash
 cargo run -- server
 ```
 
-In questa modalità non si apre la GUI: viene esposto soltanto il server HTTP locale.
+Questa modalità è utile quando:
 
-### Cambiare indirizzo/porta API
+- vuoi usare solo il browser;
+- stai facendo debug o test degli endpoint;
+- vuoi integrare client esterni via HTTP locale.
 
-Per usare un binding diverso:
+### 3. Aprire la WebPage
+
+Con il server attivo, apri nel browser:
+
+```text
+http://127.0.0.1:7878/
+```
+
+Gli asset della WebPage sono serviti direttamente dal backend ai path:
+
+- `GET /`
+- `GET /app.css`
+- `GET /app.js`
+
+### 4. Cambiare host/porta API
+
+Per cambiare bind address usa la variabile d'ambiente `FIRSTBOOT_API_ADDR`.
+
+Esempio backend headless:
 
 ```bash
 FIRSTBOOT_API_ADDR=0.0.0.0:7878 cargo run -- server
 ```
 
-Oppure, per la modalità GUI:
+Esempio GUI desktop:
 
 ```bash
 FIRSTBOOT_API_ADDR=127.0.0.1:7879 cargo run
 ```
 
-## Flusso operativo dalla GUI
+---
 
-Quando avvii l'applicazione puoi seguire questo flusso:
+## Le due interfacce: quando usare GUI nativa e quando usare WebPage
 
-1. **Controlla data, ora e timezone** mostrate nella barra superiore.
-2. **Compila i tre profili utente** suggeriti:
-   - amministratore;
-   - installatore;
-   - utente finale.
-3. **Inserisci le password**: il feedback di robustezza è informativo e non blocca il salvataggio.
-4. **Scegli il livello di permesso** da ciascun menu a tendina.
-5. Premi **Applica configurazione** per inviare i dati al backend.
-6. Usa **Backup recovery** o **Factory Reset** se vuoi testare gli altri flussi host.
-7. Se devi cambiare l'orario, premi **Configura orario**, modifica i valori e poi **Salva**.
+## GUI nativa desktop (Rust + Slint)
 
-## Cosa fanno davvero i pulsanti oggi
+La **GUI nativa** è l'interfaccia principale per l'operatore locale. È adatta quando il dispositivo ha monitor/touch locale oppure quando vuoi un'esperienza desktop dedicata.
 
-L'implementazione attuale del backend è volutamente dimostrativa:
+### Cosa offre
 
-- **Applica configurazione**: serializza i tre utenti e li appende a `/tmp/firstboot-user-config.log`.
-- **Backup recovery**: scrive un evento in `/tmp/firstboot-actions.log` ed esegue `uname -a`.
-- **Factory Reset**: scrive un evento in `/tmp/firstboot-actions.log` ed esegue `date`.
-- **Salva orario**: prova a invocare `timedatectl set-timezone` e `timedatectl set-time`.
+- barra superiore con **data, ora e timezone** aggiornate periodicamente;
+- form guidato per i tre profili utente:
+  - amministratore;
+  - installatore;
+  - utente finale;
+- feedback password immediato;
+- selezione del livello di permesso da menu a tendina;
+- popup dedicato per **configurare data, ora e timezone**;
+- pulsanti per:
+  - **Applica configurazione**;
+  - **Backup recovery**;
+  - **Factory reset**.
 
-Questo significa che il progetto è già utile come base per UI e integrazione, ma il layer host può essere sostituito in seguito con logiche reali di provisioning del dispositivo.
+### Quando preferirla
 
-## Interfaccia web browser
+Usa la GUI nativa se:
 
-Avviando il server (`cargo run -- server`) oppure l'app completa (`cargo run`), puoi aprire nel browser:
+- lavori direttamente sul dispositivo;
+- vuoi un'interfaccia più “appliance-like”;
+- ti serve un flusso operatore lineare e focalizzato;
+- vuoi ridurre al minimo il contesto tecnico visibile all'utente finale.
 
-```
-http://127.0.0.1:7878/
-```
+### Flusso operativo consigliato nella GUI
 
-Caratteristiche della nuova UI web:
+1. Verifica **data, ora e timezone** nella toolbar superiore.
+2. Compila i tre profili utente richiesti.
+3. Inserisci le password e controlla il feedback di robustezza.
+4. Seleziona il livello di permesso per ogni profilo.
+5. Premi **Applica configurazione**.
+6. Se necessario usa **Configura orario** per correggere data/ora/timezone.
+7. Esegui **Backup recovery** o **Factory reset** solo quando vuoi testare o simulare quei flussi.
 
-- usa gli stessi endpoint già consumati dalla GUI Slint;
-- aggiorna automaticamente data/ora/timezone ogni secondo;
-- permette di aprire il dialog di configurazione oraria dal browser;
-- espone i tre profili utente con feedback password e permessi;
-- adotta un layout responsive con palette e accenti grafici ispirati al sito Pixsys.
+---
 
-Gli asset vengono serviti direttamente dal backend Rust ai path `GET /`, `GET /app.css` e `GET /app.js`.
+## WebPage responsive
+
+La **WebPage** è la seconda interfaccia del progetto. Non è una pagina informativa: è una vera UI operativa che usa gli stessi endpoint della GUI nativa.
+
+### Cosa offre
+
+- dashboard iniziale con **stato host** e metriche di data/ora/timezone;
+- layout responsive, adatto anche a schermi più piccoli;
+- sezione utenti con gli stessi tre profili della GUI;
+- feedback password coerente con il client desktop;
+- modal per configurare data, ora e timezone;
+- area stato/output backend per leggere subito l'esito delle operazioni;
+- pulsanti per apply configuration, backup recovery e factory reset.
+
+### Quando preferirla
+
+Usa la WebPage se:
+
+- vuoi accedere all'interfaccia da browser senza aprire la GUI desktop;
+- stai facendo demo, collaudo o supporto remoto su rete locale;
+- vuoi verificare rapidamente il comportamento delle API con una UI già pronta;
+- preferisci un'interfaccia responsive servita direttamente dal backend.
+
+### Flusso operativo consigliato nella WebPage
+
+1. Apri `http://127.0.0.1:7878/`.
+2. Controlla il riquadro **Stato host**.
+3. Premi **Aggiorna stato** se vuoi forzare una nuova lettura.
+4. Compila i profili utente nella sezione centrale.
+5. Usa **Configura orario** per aprire la finestra modale e modificare data/ora/timezone.
+6. Premi **Applica configurazione** o gli altri pulsanti operativi.
+7. Controlla il pannello **Stato operazioni** per l'esito restituito dal backend.
+
+---
+
+## Differenze pratiche tra GUI nativa e WebPage
+
+| Aspetto | GUI nativa | WebPage |
+|---|---|---|
+| Tecnologia | Slint desktop | HTML/CSS/JS serviti dal backend |
+| Avvio | `cargo run` | `cargo run -- server` oppure `cargo run` + browser |
+| Uso tipico | operatore locale sul dispositivo | accesso da browser, test, demo |
+| UX | più “dedicata” e desktop | più flessibile e responsive |
+| API usate | API HTTP locali | le stesse API HTTP locali |
+
+In termini funzionali, le due interfacce sono allineate: cambia soprattutto il contesto d'uso.
+
+---
+
+## Novità recenti
+
+Questa è la sezione più utile per capire **cosa è cambiato nelle ultime revisioni** del progetto.
+
+### Ultime modifiche introdotte
+
+- è stata aggiunta una **WebPage responsive completa**, servita direttamente dal backend Rust;
+- la root `GET /` ora espone la UI web invece di una semplice pagina placeholder/informativa;
+- GUI nativa e WebPage condividono lo stesso backend HTTP locale e gli stessi endpoint;
+- la documentazione e i commenti del codice sono stati migliorati per chiarire architettura, callback e payload;
+- il routing del backend è stato sistemato per servire correttamente la UI web e gli asset associati.
+
+### Impatto pratico delle ultime modifiche
+
+Oggi il progetto può essere usato in due modi reali:
+
+1. come **app desktop nativa** per l'operatore locale;
+2. come **console web** per browser, utile per test, demo e accesso più flessibile.
+
+Questo rende il repository molto più vicino a una base di prodotto: non c'è più una sola GUI, ma un backend locale condiviso con due canali di accesso coerenti.
+
+---
 
 ## Endpoint HTTP disponibili
 
 Il backend locale espone questi endpoint:
 
 - `GET /`
+- `GET /app.css`
+- `GET /app.js`
 - `GET /api/time`
 - `POST /api/time`
 - `POST /api/configuration`
@@ -177,6 +260,8 @@ curl -X POST http://127.0.0.1:7878/api/backup-recovery
 curl -X POST http://127.0.0.1:7878/api/factory-reset
 ```
 
+---
+
 ## Formato dei payload
 
 ### `/api/time`
@@ -197,11 +282,40 @@ Una riga per utente, nel formato:
 role|username|full_name|password|permission_idx
 ```
 
-Dove `permission_idx` corrisponde alle voci del `ComboBox` in UI:
+Dove `permission_idx` corrisponde alle voci del selettore permessi in UI:
 
 - `0` = amministratore completo;
 - `1` = rete e ora di sistema;
 - `2` = sola visualizzazione.
+
+---
+
+## Cosa fanno davvero i pulsanti oggi
+
+L'implementazione attuale del backend è ancora dimostrativa, ma già utile per testare il flusso end-to-end.
+
+- **Applica configurazione**: serializza i tre utenti e li appende a `/tmp/firstboot-user-config.log`.
+- **Backup recovery**: scrive un evento in `/tmp/firstboot-actions.log` ed esegue `uname -a`.
+- **Factory reset**: scrive un evento in `/tmp/firstboot-actions.log` ed esegue `date`.
+- **Salva orario**: prova a invocare `timedatectl set-timezone` e `timedatectl set-time`.
+
+Questo significa che il progetto è già utile come base di UX, integrazione e test, mentre il layer host può essere sostituito in seguito con logiche reali di provisioning.
+
+---
+
+## Architettura del repository
+
+### Componenti principali
+
+- `src/main.rs`: bootstrap dell'applicazione, avvio GUI e collegamento dei callback Slint al client API.
+- `src/api.rs`: server HTTP locale minimale + client HTTP raw usato dalla GUI.
+- `src/web.rs` + `web/`: asset e markup della WebPage servita dal backend.
+- `src/backend.rs`: implementazione demo del servizio host che esegue i comandi locali.
+- `src/models.rs`: payload e modelli condivisi tra frontend e backend.
+- `ui/app.slint`: layout, proprietà e callback della GUI nativa.
+- `build.rs`: compilazione della UI Slint durante la build.
+
+---
 
 ## Compilazione
 
@@ -217,6 +331,8 @@ Dove `permission_idx` corrisponde alle voci del `ComboBox` in UI:
 cargo build --release
 cargo run
 ```
+
+---
 
 ## Setup rapido ambiente Rust su Debian/Ubuntu
 
@@ -242,9 +358,11 @@ rustc --version
 cargo --version
 ```
 
+---
+
 ## Note utili per sviluppatori
 
 - La GUI usa `slint::include_modules!()` per importare il codice generato da `build.rs`.
-- La comunicazione HTTP è intenzionalmente minimale e non usa framework esterni.
+- La comunicazione HTTP è volutamente minimale e non usa framework esterni.
 - Il backend locale usa file in `/tmp` per simulare effetti persistenti senza toccare configurazioni reali di sistema, tranne quando si invoca il salvataggio dell'orario con `timedatectl`.
-- Se apri `http://127.0.0.1:7878/` dal browser vedrai solo una pagina informativa, non la GUI desktop.
+- La WebPage e la GUI nativa sono due front-end distinti, ma condividono la stessa logica di backend e lo stesso perimetro funzionale.
