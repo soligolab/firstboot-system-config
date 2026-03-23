@@ -1,6 +1,7 @@
 mod api;
 mod backend;
 mod models;
+mod web;
 
 use std::thread;
 use std::time::Duration;

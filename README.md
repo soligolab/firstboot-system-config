@@ -16,6 +16,8 @@ Il progetto fornisce una GUI desktop nativa per eseguire le attività tipiche di
 - visualizzazione immediata dell'esito delle operazioni direttamente nell'interfaccia.
 
 > La GUI non chiama direttamente i comandi di sistema: dialoga sempre con un backend HTTP locale incluso nel progetto.
+>
+> La stessa API locale ora alimenta anche una nuova interfaccia web responsive servita dal backend Rust su `GET /`.
 
 ## Architettura in breve
 
@@ -28,6 +30,7 @@ Il repository è organizzato in due blocchi principali:
 
 - `src/main.rs`: bootstrap dell'applicazione, avvio GUI e collegamento dei callback Slint al client API.
 - `src/api.rs`: server HTTP minimale locale + client HTTP raw usato dalla GUI.
+- `src/web.rs` + `web/`: asset e markup della nuova interfaccia browser servita dallo stesso backend.
 - `src/backend.rs`: implementazione demo del servizio host che esegue i comandi locali.
 - `src/models.rs`: payload e modelli condivisi tra frontend e backend.
 - `ui/app.slint`: layout, proprietà e callback della GUI.
@@ -49,6 +52,7 @@ Cosa succede:
 2. la finestra Slint viene aperta;
 3. la GUI legge data/ora/timezone dal backend;
 4. tutte le azioni dei pulsanti vengono inoltrate via HTTP locale.
+5. in parallelo, aprendo la root HTTP nel browser è disponibile anche la web UI responsive che usa gli stessi endpoint.
 
 ### Modalità 2: solo backend API
 
@@ -99,6 +103,24 @@ L'implementazione attuale del backend è volutamente dimostrativa:
 - **Salva orario**: prova a invocare `timedatectl set-timezone` e `timedatectl set-time`.
 
 Questo significa che il progetto è già utile come base per UI e integrazione, ma il layer host può essere sostituito in seguito con logiche reali di provisioning del dispositivo.
+
+## Interfaccia web browser
+
+Avviando il server (`cargo run -- server`) oppure l'app completa (`cargo run`), puoi aprire nel browser:
+
+```
+http://127.0.0.1:7878/
+```
+
+Caratteristiche della nuova UI web:
+
+- usa gli stessi endpoint già consumati dalla GUI Slint;
+- aggiorna automaticamente data/ora/timezone ogni secondo;
+- permette di aprire il dialog di configurazione oraria dal browser;
+- espone i tre profili utente con feedback password e permessi;
+- adotta un layout responsive con palette e accenti grafici ispirati al sito Pixsys.
+
+Gli asset vengono serviti direttamente dal backend Rust ai path `GET /`, `GET /app.css` e `GET /app.js`.
 
 ## Endpoint HTTP disponibili
 
