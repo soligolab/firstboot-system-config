@@ -1,41 +1,48 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>First Boot System Config</title>
-  <meta name="description" content="Interfaccia web responsive per la configurazione iniziale del sistema, collegata allo stesso backend della GUI Slint.">
+  <meta name="description" content="Responsive web interface for initial system setup, connected to the same backend used by the Slint GUI.">
   <link rel="stylesheet" href="/app.css">
 </head>
 <body>
   <div class="page-shell">
     <header class="hero-panel">
       <div class="hero-copy">
-        <p class="eyebrow">First boot · web console</p>
-        <h1>Configurazione iniziale del sistema da browser</h1>
-        <p class="hero-text">
-          Interfaccia web responsive ispirata all’estetica industriale di Pixsys: superfici scure,
-          accenti turchesi, tipografia forte e pannelli tecnici. Tutte le operazioni dialogano con lo
-          stesso backend HTTP locale già usato dalla GUI Slint.
+        <div class="toolbar-row">
+          <div class="language-picker">
+            <span class="language-label" id="languageLabel">Language</span>
+            <img class="language-flag" id="languageFlag" alt="">
+            <select id="languageSelect" aria-label="Language"></select>
+          </div>
+        </div>
+        <p class="eyebrow" id="webHeroEyebrow">First boot · web console</p>
+        <h1 id="webTitle">Initial system setup from the browser</h1>
+        <p class="hero-text" id="webText">
+          Responsive web interface inspired by industrial HMIs: dark surfaces, cyan accents,
+          strong typography and technical panels. Every action talks to the same local HTTP
+          backend already used by the Slint GUI.
         </p>
         <div class="hero-actions">
-          <button class="btn btn-primary" id="refreshClockBtn" type="button">Aggiorna stato</button>
-          <button class="btn btn-secondary" id="openTimeModalBtn" type="button">Configura orario</button>
+          <button class="btn btn-primary" id="refreshClockBtn" type="button">Refresh status</button>
+          <button class="btn btn-secondary" id="openTimeModalBtn" type="button">Configure time</button>
         </div>
       </div>
       <aside class="status-panel">
-        <p class="panel-label">Stato host</p>
+        <p class="panel-label" id="hostStatusLabel">Host status</p>
         <div class="status-grid">
           <div>
-            <span class="metric-label">Data</span>
+            <span class="metric-label" id="clockDateLabel">Date</span>
             <strong id="currentDate">--/--/----</strong>
           </div>
           <div>
-            <span class="metric-label">Ora</span>
+            <span class="metric-label" id="clockTimeLabel">Time</span>
             <strong id="currentTime">--:--:--</strong>
           </div>
           <div class="status-grid-wide">
-            <span class="metric-label">Timezone</span>
+            <span class="metric-label" id="clockTimezoneLabel">Timezone</span>
             <strong id="currentTimezone">UTC</strong>
           </div>
         </div>
@@ -45,12 +52,12 @@
     <main class="content-stack">
       <section class="section-header">
         <div>
-          <p class="eyebrow">Profili utente</p>
-          <h2>Utenti e permessi suggeriti per il primo avvio</h2>
+          <p class="eyebrow" id="userProfilesEyebrow">User profiles</p>
+          <h2 id="userProfilesHeading">Suggested users and permissions for first boot</h2>
         </div>
-        <p class="section-copy">
-          Compila i profili amministratore, installatore e operatore finale. Il controllo password è
-          informativo e replica il comportamento della GUI Slint.
+        <p class="section-copy" id="userProfilesCopy">
+          Fill in the administrator, installer and end-user profiles. Password feedback is
+          informational and mirrors the Slint GUI.
         </p>
       </section>
 
@@ -58,22 +65,22 @@
 
       <section class="actions-panel">
         <div class="action-buttons">
-          <button class="btn btn-primary" id="applyConfigurationBtn" type="button">Applica configurazione</button>
+          <button class="btn btn-primary" id="applyConfigurationBtn" type="button">Apply configuration</button>
           <button class="btn btn-secondary" id="backupRecoveryBtn" type="button">Backup recovery</button>
           <button class="btn btn-danger" id="factoryResetBtn" type="button">Factory reset</button>
         </div>
-        <p class="helper-text">Le azioni vengono inoltrate agli stessi endpoint usati dal client desktop Slint.</p>
+        <p class="helper-text" id="actionHelper">Actions are forwarded to the same endpoints used by the Slint desktop client.</p>
       </section>
 
       <section class="log-panel">
         <div class="panel-heading">
           <div>
-            <p class="eyebrow">Output backend</p>
-            <h2>Stato operazioni</h2>
+            <p class="eyebrow" id="outputEyebrow">Backend output</p>
+            <h2 id="operationsHeading">Operation status</h2>
           </div>
-          <span class="log-badge">HTTP locale</span>
+          <span class="log-badge" id="logBadge">Local HTTP</span>
         </div>
-        <pre id="statusMessage">Pronto. Frontend web collegato al backend locale.</pre>
+        <pre id="statusMessage">Ready. Web frontend connected to the local backend.</pre>
       </section>
     </main>
   </div>
@@ -82,31 +89,31 @@
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="timeModalTitle">
       <div class="panel-heading modal-heading">
         <div>
-          <p class="eyebrow">Ora di sistema</p>
-          <h2 id="timeModalTitle">Configura data, ora e timezone</h2>
+          <p class="eyebrow" id="timeSystemEyebrow">System time</p>
+          <h2 id="timeModalTitle">Configure date, time and timezone</h2>
         </div>
       </div>
 
       <div class="modal-form">
         <label>
-          <span>Data</span>
+          <span id="currentDateInputLabel">Current date</span>
           <input id="timeDateInput" type="date">
         </label>
         <label>
-          <span>Ora</span>
+          <span id="currentTimeInputLabel">Current time</span>
           <input id="timeTimeInput" type="time" step="1">
         </label>
         <label>
-          <span>Timezone</span>
+          <span id="timezoneInputLabel">Timezone</span>
           <select id="timeTimezoneInput"></select>
         </label>
       </div>
 
-      <p class="helper-text">Formato richiesto dal backend: data YYYY-MM-DD, ora HH:MM:SS.</p>
+      <p class="helper-text" id="formatHint">Required format: date YYYY-MM-DD, time HH:MM:SS.</p>
 
       <div class="modal-actions">
-        <button class="btn btn-ghost" id="cancelTimeModalBtn" type="button">Annulla</button>
-        <button class="btn btn-primary" id="saveTimeSettingsBtn" type="button">Salva</button>
+        <button class="btn btn-ghost" id="cancelTimeModalBtn" type="button">Cancel</button>
+        <button class="btn btn-primary" id="saveTimeSettingsBtn" type="button">Save</button>
       </div>
     </div>
   </div>

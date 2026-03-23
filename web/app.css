@@ -114,6 +114,41 @@ button, input, select, textarea {
   text-transform: uppercase;
 }
 
+.toolbar-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 18px;
+}
+
+.language-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 1;
+}
+
+.language-label {
+  color: #b7cae3;
+  font-weight: 700;
+}
+
+.language-flag {
+  width: 28px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+.language-flag-hidden {
+  display: none;
+}
+
 .hero-actions,
 .action-buttons,
 .modal-actions {
@@ -258,9 +293,6 @@ select:focus {
 
 .feedback {
   min-height: 1.4em;
-  margin: 0;
-  font-size: 0.95rem;
-  color: #b7cae3;
 }
 
 .actions-panel,
@@ -268,39 +300,26 @@ select:focus {
   padding: 24px;
 }
 
-.actions-panel {
-  display: grid;
-  gap: 10px;
-}
-
 .log-panel pre {
-  margin: 0;
+  margin: 16px 0 0;
   white-space: pre-wrap;
   word-break: break-word;
-  overflow-wrap: anywhere;
-  padding: 18px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.28);
-  color: #dff7ff;
-  min-height: 160px;
+  min-height: 110px;
 }
 
 .panel-heading {
   display: flex;
-  align-items: start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  align-items: flex-start;
 }
 
 .log-badge {
   border-radius: 999px;
-  padding: 0.4rem 0.8rem;
-  background: rgba(32, 212, 255, 0.1);
-  color: var(--accent);
-  font-weight: 700;
-  font-size: 0.82rem;
+  padding: 8px 12px;
+  color: #04101d;
+  background: linear-gradient(135deg, #72ecff 0%, var(--accent) 55%, #0aa8e7 100%);
+  font-weight: 800;
 }
 
 .modal-backdrop {
@@ -308,12 +327,9 @@ select:focus {
   inset: 0;
   display: grid;
   place-items: center;
+  background: rgba(2, 7, 14, 0.76);
   padding: 24px;
-  background: rgba(2, 7, 14, 0.74);
-  backdrop-filter: blur(8px);
 }
-
-.hidden { display: none; }
 
 .modal-card {
   width: min(560px, 100%);
@@ -323,14 +339,14 @@ select:focus {
 .modal-form {
   display: grid;
   gap: 14px;
+  margin-top: 20px;
 }
 
-.modal-actions {
-  justify-content: flex-end;
-  margin-top: 18px;
+.hidden {
+  display: none;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 1080px) {
   .hero-panel,
   .section-header,
   .user-grid {
@@ -341,35 +357,28 @@ select:focus {
 @media (max-width: 720px) {
   .page-shell {
     width: min(100% - 20px, 1400px);
-    padding-top: 12px;
   }
 
   .hero-panel,
-  .status-panel,
   .actions-panel,
   .log-panel,
   .user-card,
+  .status-panel,
   .modal-card {
-    padding: 18px;
-    border-radius: 18px;
+    padding: 20px;
   }
 
   .hero-copy h1 {
     max-width: none;
-    font-size: clamp(2rem, 10vw, 3rem);
   }
 
+  .toolbar-row,
+  .language-picker,
   .hero-actions,
   .action-buttons,
-  .modal-actions {
+  .modal-actions,
+  .panel-heading {
     flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-  }
-
-  .status-grid {
-    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }

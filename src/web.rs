@@ -9,3 +9,7 @@ pub fn app_css() -> &'static str {
 pub fn app_js() -> &'static str {
     include_str!("../web/app.js")
 }
+
+pub fn languages_xml() -> &'static str {
+    include_str!("../resources/languages.xml")
+}

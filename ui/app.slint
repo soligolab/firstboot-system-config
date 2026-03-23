@@ -3,19 +3,36 @@ import { Button, ComboBox, GroupBox, LineEdit } from "std-widgets.slint";
 // Finestra principale della procedura di first-boot. Tutte le proprietà sono
 // sincronizzate da/verso il codice Rust tramite i getter/setter generati da Slint.
 export component AppWindow inherits Window {
-    title: "First Boot - Configurazione Utenti";
-    width: 1080px;
-    height: 760px;
+    title: root.window_title;
+    width: 1120px;
+    height: 780px;
+
+    in-out property <string> window_title: "First Boot - User Configuration";
+    in-out property <int> current_language_idx: 0;
+    in-out property <[string]> language_options: ["English", "Italiano", "Deutsch", "Español"];
+    in-out property <string> language_label: "Language";
+    in-out property <image> current_language_flag;
+    in-out property <string> current_language_flag_emoji: "🇬🇧";
 
     // Stato corrente dell'orologio di sistema letto dal backend.
     in-out property <string> current_date: "--/--/----";
     in-out property <string> current_time: "--:--:--";
     in-out property <int> current_timezone_idx: 1;
+    in-out property <[string]> timezone_options: ["UTC", "Europe/Rome", "Europe/London", "America/New_York", "Asia/Tokyo"];
     in-out property <string> current_timezone_label: "Europe/Rome";
     in-out property <bool> show_time_settings: false;
-    in-out property <string> status_message: "Pronto.";
+    in-out property <string> status_message: "Ready.";
+
+    in-out property <string> clock_date_label: "Date";
+    in-out property <string> clock_time_label: "Time";
+    in-out property <string> clock_timezone_label: "Timezone";
+    in-out property <string> configure_time_label: "Configure time";
+    in-out property <string> main_heading: "First boot configuration - users and permissions";
+    in-out property <string> suggestion_text;
 
     // Profilo amministratore suggerito al primo avvio.
+    in-out property <string> admin_title: "System administrator";
+    in-out property <string> admin_description;
     in-out property <string> admin_username: "sysadmin";
     in-out property <string> admin_full_name: "System Administrator";
     in-out property <string> admin_password;
@@ -23,6 +40,8 @@ export component AppWindow inherits Window {
     in-out property <string> admin_password_feedback: "";
 
     // Profilo installatore / tecnico di campo.
+    in-out property <string> installer_title: "Installer";
+    in-out property <string> installer_description;
     in-out property <string> installer_username: "fieldtech";
     in-out property <string> installer_full_name: "Field Installer";
     in-out property <string> installer_password;
@@ -30,14 +49,35 @@ export component AppWindow inherits Window {
     in-out property <string> installer_password_feedback: "";
 
     // Profilo operatore finale con privilegi minimi.
+    in-out property <string> viewer_title: "End user";
+    in-out property <string> viewer_description;
     in-out property <string> viewer_username: "operator";
     in-out property <string> viewer_full_name: "End User Operator";
     in-out property <string> viewer_password;
     in-out property <int> viewer_permission_idx: 2;
     in-out property <string> viewer_password_feedback: "";
 
+    in-out property <string> username_label: "Username";
+    in-out property <string> full_name_label: "Full name";
+    in-out property <string> password_label: "Password";
+    in-out property <string> permissions_label: "Permissions";
+    in-out property <[string]> permission_options: ["Full administrator", "Networking and system time", "Read only"];
+
+    in-out property <string> apply_configuration_label: "Apply configuration";
+    in-out property <string> backup_recovery_label: "Backup recovery";
+    in-out property <string> factory_reset_label: "Factory reset";
+    in-out property <string> note_password;
+
+    in-out property <string> time_settings_heading: "Configure date, time and timezone";
+    in-out property <string> current_date_input_label: "Current date";
+    in-out property <string> current_time_input_label: "Current time";
+    in-out property <string> time_format_hint;
+    in-out property <string> cancel_label: "Cancel";
+    in-out property <string> save_label: "Save";
+
     // Callback implementati in Rust e invocati dai controlli grafici.
     callback password_feedback(string, string) -> string;
+    callback language_changed(int);
     callback apply_configuration();
     callback backup_recovery();
     callback factory_reset();
@@ -49,22 +89,49 @@ export component AppWindow inherits Window {
         padding: 20px;
         spacing: 14px;
 
-        // Barra superiore con stato temporale e accesso al popup di modifica.
+        // Barra superiore con selettore lingua, stato temporale e accesso al popup.
         HorizontalLayout {
             spacing: 12px;
+
+            Rectangle {
+                HorizontalLayout {
+                    spacing: 8px;
+                    Image {
+                        width: 30px;
+                        height: 22px;
+                        source: root.current_language_flag;
+                    }
+                    Text {
+                        text: root.current_language_flag_emoji;
+                        visible: root.current_language_flag_emoji != "";
+                    }
+                    Text {
+                        text: root.language_label;
+                        font-weight: 600;
+                    }
+                    ComboBox {
+                        model: root.language_options;
+                        current-index <=> root.current_language_idx;
+                        selected(_) => {
+                            root.language_changed(root.current_language_idx);
+                        }
+                    }
+                }
+            }
+
             Rectangle {
                 HorizontalLayout {
                     spacing: 12px;
                     Text {
-                        text: "Data: " + root.current_date;
+                        text: root.clock_date_label + ": " + root.current_date;
                         font-weight: 600;
                     }
                     Text {
-                        text: "Ora: " + root.current_time;
+                        text: root.clock_time_label + ": " + root.current_time;
                         font-weight: 600;
                     }
                     Text {
-                        text: "Timezone: " + root.current_timezone_label;
+                        text: root.clock_timezone_label + ": " + root.current_timezone_label;
                         font-weight: 600;
                     }
                 }
@@ -73,20 +140,20 @@ export component AppWindow inherits Window {
                 horizontal-stretch: 1;
             }
             Button {
-                text: "Configura orario";
+                text: root.configure_time_label;
                 clicked => { root.open_time_settings(); }
             }
         }
 
         Text {
-            text: "Configurazione primo avvio - utenti e permessi";
+            text: root.main_heading;
             font-size: 24px;
             font-weight: 700;
             horizontal-alignment: center;
         }
 
         Text {
-            text: "Nomi suggeriti: sysadmin (amministratore), fieldtech (installatore), operator (utente finale).";
+            text: root.suggestion_text;
             color: #404040;
             horizontal-alignment: center;
         }
@@ -96,75 +163,78 @@ export component AppWindow inherits Window {
             spacing: 12px;
 
             GroupBox {
-                title: "Amministratore di sistema";
+                title: root.admin_title;
                 VerticalLayout {
                     spacing: 8px;
-                    Text { text: "Username"; }
+                    Text { text: root.admin_description; color: #505050; wrap: word-wrap; }
+                    Text { text: root.username_label; }
                     LineEdit { text <=> root.admin_username; }
-                    Text { text: "Nome esteso"; }
+                    Text { text: root.full_name_label; }
                     LineEdit { text <=> root.admin_full_name; }
-                    Text { text: "Password"; }
+                    Text { text: root.password_label; }
                     LineEdit {
                         input-type: password;
                         text <=> root.admin_password;
                         edited(text) => {
-                            root.admin_password_feedback = root.password_feedback("Amministratore", text);
+                            root.admin_password_feedback = root.password_feedback(root.admin_title, text);
                         }
                     }
                     Text { text: root.admin_password_feedback; color: #505050; wrap: word-wrap; }
-                    Text { text: "Permessi"; }
+                    Text { text: root.permissions_label; }
                     ComboBox {
-                        model: ["Amministratore completo", "Rete e ora di sistema", "Sola visualizzazione"];
+                        model: root.permission_options;
                         current-index <=> root.admin_permission_idx;
                     }
                 }
             }
 
             GroupBox {
-                title: "Installatore";
+                title: root.installer_title;
                 VerticalLayout {
                     spacing: 8px;
-                    Text { text: "Username"; }
+                    Text { text: root.installer_description; color: #505050; wrap: word-wrap; }
+                    Text { text: root.username_label; }
                     LineEdit { text <=> root.installer_username; }
-                    Text { text: "Nome esteso"; }
+                    Text { text: root.full_name_label; }
                     LineEdit { text <=> root.installer_full_name; }
-                    Text { text: "Password"; }
+                    Text { text: root.password_label; }
                     LineEdit {
                         input-type: password;
                         text <=> root.installer_password;
                         edited(text) => {
-                            root.installer_password_feedback = root.password_feedback("Installatore", text);
+                            root.installer_password_feedback = root.password_feedback(root.installer_title, text);
                         }
                     }
                     Text { text: root.installer_password_feedback; color: #505050; wrap: word-wrap; }
-                    Text { text: "Permessi"; }
+                    Text { text: root.permissions_label; }
                     ComboBox {
-                        model: ["Amministratore completo", "Rete e ora di sistema", "Sola visualizzazione"];
+                        model: root.permission_options;
                         current-index <=> root.installer_permission_idx;
                     }
                 }
             }
 
             GroupBox {
-                title: "Utente finale";
+                title: root.viewer_title;
                 VerticalLayout {
                     spacing: 8px;
-                    Text { text: "Username"; }
+                    Text { text: root.viewer_description; color: #505050; wrap: word-wrap; }
+                    Text { text: root.username_label; }
                     LineEdit { text <=> root.viewer_username; }
-                    Text { text: "Nome esteso"; }
+                    Text { text: root.full_name_label; }
                     LineEdit { text <=> root.viewer_full_name; }
-                    Text { text: "Password"; }
+                    Text { text: root.password_label; }
                     LineEdit {
                         input-type: password;
                         text <=> root.viewer_password;
                         edited(text) => {
-                            root.viewer_password_feedback = root.password_feedback("Utente finale", text);
+                            root.viewer_password_feedback = root.password_feedback(root.viewer_title, text);
                         }
                     }
                     Text { text: root.viewer_password_feedback; color: #505050; wrap: word-wrap; }
-                    Text { text: "Permessi"; }
+                    Text { text: root.permissions_label; }
                     ComboBox {
-                        model: ["Amministratore completo", "Rete e ora di sistema", "Sola visualizzazione"];
+                        model: root.permission_options;
                         current-index <=> root.viewer_permission_idx;
                     }
                 }
@@ -181,15 +251,15 @@ export component AppWindow inherits Window {
             spacing: 12px;
 
             Button {
-                text: "Applica configurazione";
+                text: root.apply_configuration_label;
                 clicked => { root.apply_configuration(); }
             }
             Button {
-                text: "Backup recovery";
+                text: root.backup_recovery_label;
                 clicked => { root.backup_recovery(); }
             }
             Button {
-                text: "Factory Reset";
+                text: root.factory_reset_label;
                 clicked => { root.factory_reset(); }
             }
         }
@@ -211,7 +281,7 @@ export component AppWindow inherits Window {
         }
 
         Text {
-            text: "Nota: il controllo complessità password è informativo (non blocca il salvataggio).";
+            text: root.note_password;
             color: #606060;
             horizontal-alignment: center;
         }
@@ -239,29 +309,29 @@ export component AppWindow inherits Window {
                 spacing: 10px;
 
                 Text {
-                    text: "Configurazione orario di sistema";
+                    text: root.time_settings_heading;
                     font-size: 20px;
                     font-weight: 700;
                 }
 
-                Text { text: "Data corrente"; }
+                Text { text: root.current_date_input_label; }
                 LineEdit {
                     text <=> root.current_date;
                 }
 
-                Text { text: "Ora corrente"; }
+                Text { text: root.current_time_input_label; }
                 LineEdit {
                     text <=> root.current_time;
                 }
 
-                Text { text: "Timezone"; }
+                Text { text: root.clock_timezone_label; }
                 ComboBox {
-                    model: ["UTC", "Europe/Rome", "Europe/London", "America/New_York", "Asia/Tokyo"];
+                    model: root.timezone_options;
                     current-index <=> root.current_timezone_idx;
                 }
 
                 Text {
-                    text: "Formato richiesto: data YYYY-MM-DD, ora HH:MM:SS";
+                    text: root.time_format_hint;
                     color: #606060;
                 }
 
@@ -270,11 +340,11 @@ export component AppWindow inherits Window {
 
                     Rectangle { horizontal-stretch: 1; }
                     Button {
-                        text: "Annulla";
+                        text: root.cancel_label;
                         clicked => { root.close_time_settings(); }
                     }
                     Button {
-                        text: "Salva";
+                        text: root.save_label;
                         clicked => { root.save_time_settings(); }
                     }
                 }
